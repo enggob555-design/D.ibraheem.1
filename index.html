@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تسجيل الدخول - عيادتي</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.js"></script>
+    
     <script src="./supabase-config.js"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght=300;400;600;750&display=swap');
         body { font-family: 'Cairo', sans-serif; }
@@ -65,7 +68,6 @@
     </div>
 
     <script>
-        // ⚠️ تم حذف أسطر تعريف supabase لأنها تُستدعى الآن من الملف الخارجي تلقائياً
         const loginForm = document.getElementById('login-form');
         const alertMessage = document.getElementById('alert-message');
         const submitBtn = document.getElementById('submit-btn');
@@ -77,10 +79,13 @@
         const statusDot = document.getElementById('db-status-dot');
         const statusText = document.getElementById('db-status-text');
 
+        // دالة فحص الربط المستقرة والمتوافقة مع جيت هاب
         async function testDatabaseConnection() {
             try {
-                const { error } = await supabase.from('user_roles').select('role').limit(1);
+                if (!window.supabase) { throw new Error("المكتبة غير معرفة بعد"); }
+                const { error } = await window.supabase.from('user_roles').select('role').limit(1);
                 if (error && error.message.includes("apiKey")) throw new Error();
+                
                 statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-xs shadow-emerald-500/50";
                 statusText.innerText = "متصل سحابياً 🟢";
                 statusText.className = "text-[10px] font-bold text-emerald-600";
@@ -119,11 +124,11 @@
         async function redirectUserByRole(userId) {
             submitBtn.disabled = true;
             submitBtn.innerText = "🔄 جاري فحص الرتبة...";
-            const { data: userRole, error } = await supabase.from('user_roles').select('role').eq('user_id', userId).single();
+            const { data: userRole, error } = await window.supabase.from('user_roles').select('role').eq('user_id', userId).single();
 
             if (error || !userRole) {
                 showAlert("⚠️ الحساب مسجل، لكنه بانتظار تفعيل وترخيص الإدارة السحابية.", "error");
-                await supabase.auth.signOut();
+                await window.supabase.auth.signOut();
                 submitBtn.disabled = false;
                 submitBtn.innerText = "🔑 تسجيل الدخول الآمن";
                 return;
@@ -145,7 +150,7 @@
             const email = emailInput.value.trim();
             const password = passwordInput.value;
 
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await window.supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
                 showAlert("⚠️ البريد الإلكتروني أو كلمة المرور غير صحيحة.", "error");
@@ -163,7 +168,8 @@
         });
 
         loadSavedCredentials();
-        testDatabaseConnection();
+        // تأخير بسيط للفحص للتأكد من اكتمال استدعاء الملفات الخارجية في المتصفح
+        setTimeout(testDatabaseConnection, 500);
     </script>
 </body>
 </html>
