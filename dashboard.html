@@ -6,65 +6,54 @@
     <title>لوحة التحكم - عيادتي</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-config.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght=300;400;600;750&display=swap');
         body { font-family: 'Cairo', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen p-6">
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen p-4 md:p-6">
 
-    <div class="max-w-5xl mx-auto space-y-6 relative">
-        <div class="flex items-center justify-between bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
+    <div class="max-w-5xl mx-auto space-y-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-6 rounded-3xl border border-slate-100 shadow-xl shadow-slate-100/50 gap-4">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-linear-to-br from-teal-500 to-emerald-600 rounded-xl flex items-center justify-center text-white font-black text-xl">ع</div>
+                <div class="w-12 h-12 bg-linear-to-br from-teal-500 to-emerald-600 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-md shadow-teal-500/20">ع</div>
                 <div>
-                    <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2">لوحة تحكم العيادة - <span class="text-teal-600">عيادتي</span></h1>
-                    <p class="text-xs text-slate-400">النظام الذكي لإدارة المهام والمواعيد الطبية</p>
+                    <h1 class="text-lg font-black text-slate-800">لوحة تحكم العيادة</h1>
+                    <p class="text-xs text-slate-400">أهلاً بك يا دكتور، يمكنك إدارة مواعيدك ومرضاك الآن</p>
                 </div>
             </div>
-            
-            <div class="flex items-center gap-3">
-                <div class="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
-                    <span id="db-status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                    <span id="db-status-text" class="text-[10px] font-bold text-slate-500">جاري التأمين...</span>
-                </div>
-                <button id="doc-logout-btn" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-semibold transition cursor-pointer">تسجيل خروج</button>
-            </div>
+            <button id="logout-btn" class="bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white px-4 py-2.5 rounded-xl text-xs font-bold transition duration-200 cursor-pointer">تسجيل الخروج</button>
         </div>
 
-        <div class="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm text-center text-slate-500 text-sm">
-            🔄 جاري تحميل وتهيئة بيانات لوحة التحكم والربط السحابي مع قاعدة البيانات...
+        <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-100/50 text-center space-y-4">
+            <div class="w-16 h-16 bg-teal-50 text-teal-600 rounded-full flex items-center justify-center mx-auto text-2xl">🩺</div>
+            <h2 class="text-base font-bold text-slate-700">مرحباً بك في نظام عيادتي الذكي</h2>
+            <p class="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">قاعدة البيانات متصلة وجاهزة لوضع جداول الحجز، وملفات المرضى، والتقارير الطبية الخاصة بجمهور عيادتك.</p>
         </div>
     </div>
 
     <script>
-        const SUPABASE_URL = "https://dpyshuhinqruhaqftydkl.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweXNodWhpbnFydWhhcWZ0eWRrbCIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzE2ODAyMTgyLCJleHAiOjIwMzIzNzgxODJ9.h0L6PY42fnjxfBjwAfh3Cw_Lr6zUgMO"; 
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // التحقق الأمني من الجلسة وصلاحية الطبيب
+        async function checkDoctorSecurity() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) { window.location.href = "./index.html"; return; }
 
-        const statusDot = document.getElementById('db-status-dot');
-        const statusText = document.getElementById('db-status-text');
-
-        async function checkDocAuth() {
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) { window.location.href = "./index.html"; return; }
-                
-                statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-xs shadow-emerald-500/50";
-                statusText.innerText = "الداتا بيس آمنة 🟢";
-                statusText.className = "text-[10px] font-bold text-emerald-600";
-            } catch(e) {
-                statusDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500/50";
-                statusText.innerText = "خطأ اتصال 🔴";
+            // التحقق من الرتبة في قاعدة البيانات
+            const { data: userRole } = await supabase.from('user_roles').select('role').eq('user_id', session.user.id).single();
+            if (!userRole || userRole.role !== 'doctor') {
+                alert("🛑 حسابك غير مفعل كطبيب أو بانتظار مراجعة الإدارة.");
+                await supabase.auth.signOut();
+                window.location.href = "./index.html";
             }
         }
 
-        document.getElementById('doc-logout-btn').addEventListener('click', async () => {
+        document.getElementById('logout-btn').addEventListener('click', async () => {
             await supabase.auth.signOut();
             window.location.href = "./index.html";
         });
 
-        checkDocAuth();
+        checkDoctorSecurity();
     </script>
 </body>
 </html>
