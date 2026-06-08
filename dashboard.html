@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة إدارة العيادة الذكية المتكاملة</title>
+    <title>لوحة التحكم - عيادتي</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -11,258 +11,60 @@
         body { font-family: 'Cairo', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased pb-32">
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen p-6">
 
-    <div class="max-w-7xl mx-auto p-4 md:p-8">
-        <header class="flex flex-col lg:flex-row justify-between items-center mb-8 bg-white p-6 rounded-3xl shadow-xs border border-slate-100 gap-6">
-            <div class="flex items-center gap-4 w-full lg:w-auto">
-                <div class="w-14 h-14 bg-linear-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-md shadow-blue-500/20 tracking-wider shrink-0">Dr</div>
+    <div class="max-w-5xl mx-auto space-y-6 relative">
+        <div class="flex items-center justify-between bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-linear-to-br from-teal-500 to-emerald-600 rounded-xl flex items-center justify-center text-white font-black text-xl">ع</div>
                 <div>
-                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                        <span id="clinic-name-title">لوحة تحكم العيادة</span> 
-                        <span id="conn-status" class="text-xs font-normal text-amber-500 px-2 py-0.5 bg-amber-50 rounded-md border border-amber-100">وضع المعاينة المحلي</span>
-                    </h1>
-                    <p class="text-xs text-slate-400 mt-1">نظام المزامنة والتحكم الفوري بـ AI Agent وإدارة الاشتراكات الرقمية</p>
+                    <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2">لوحة تحكم العيادة - <span class="text-teal-600">عيادتي</span></h1>
+                    <p class="text-xs text-slate-400">النظام الذكي لإدارة المهام والمواعيد الطبية</p>
                 </div>
             </div>
-
-            <div class="flex flex-col sm:flex-row items-center gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-100 w-full lg:w-auto justify-center">
-                <div class="text-center sm:text-right">
-                    <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">📞 الدعم الفني وتجديد الاشتراك</span>
-                    <div class="flex flex-col gap-1.5 mt-1 text-xs font-bold text-slate-700">
-                        <div class="flex items-center gap-2">
-                            <a href="tel:+9647702265652" class="hover:text-blue-600 transition"><span class="text-purple-600">Asiacell:</span> +964 770 226 5652</a>
-                            <a href="https://wa.me/9647702265652" target="_blank" class="text-emerald-600 hover:text-emerald-700 text-[11px] bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-100 flex items-center gap-0.5 transition">💬 واتساب</a>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <a href="tel:+9647502265652" class="hover:text-blue-600 transition"><span class="text-sky-600">Korek:</span> +964 750 226 5652</a>
-                            <a href="https://wa.me/9647502265652" target="_blank" class="text-emerald-600 hover:text-emerald-700 text-[11px] bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-100 flex items-center gap-0.5 transition">💬 واتساب</a>
-                        </div>
-                    </div>
+            
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+                    <span id="db-status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                    <span id="db-status-text" class="text-[10px] font-bold text-slate-500">جاري التأمين...</span>
                 </div>
-            </div>
-
-            <div class="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
-                <div class="bg-blue-600 border border-blue-700 text-white px-6 py-3 rounded-2xl text-center shadow-xs">
-                    <span class="text-[10px] block text-blue-100 mb-0.5 font-bold tracking-wider">حجوزات اليوم الفعلية</span>
-                    <span id="today-count" class="font-bold text-2xl">0</span> <span class="text-blue-300 mx-1">/</span> <span id="max-patients-badge" class="font-bold text-lg text-blue-100">--</span>
-                </div>
-                <button id="logout-btn" class="bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-600 p-3 rounded-2xl text-xs font-bold transition border border-slate-200 cursor-pointer">🚪 خروج</button>
-            </div>
-        </header>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="space-y-6">
-                <div class="bg-white p-6 rounded-3xl shadow-xs border border-slate-100 space-y-4">
-                    <h3 class="text-xs font-bold text-slate-400 tracking-wider uppercase border-b border-slate-50 pb-2">💳 ترخيص المنصة والاشتراك</h3>
-                    <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100">
-                        <span class="text-xs text-slate-600">حالة الخدمة الحالية:</span>
-                        <span id="sub-status-badge" class="px-3 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700">جاري الفحص</span>
-                    </div>
-                    <div class="text-[11px] text-slate-500 px-1">تاريخ انتهاء الترخيص: <span id="sub-expiry-date" class="font-semibold text-slate-700">-</span></div>
-                </div>
-
-                <div class="bg-white p-6 rounded-3xl shadow-xs border border-slate-100 space-y-4">
-                    <h3 class="text-xs font-bold text-slate-400 tracking-wider uppercase border-b border-slate-50 pb-2">🔐 أمان الحساب وكلمة المرور</h3>
-                    <form id="password-change-form" class="space-y-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 mb-1.5">كلمة المرور الجديدة</label>
-                            <div class="relative flex items-center">
-                                <input type="password" id="new-password" required minlength="6" class="w-full p-2.5 pl-10 border border-slate-200 rounded-xl outline-none text-xs text-left" dir="ltr" placeholder="••••••••">
-                                <button type="button" id="toggle-dashboard-pwd" class="absolute left-3 text-slate-400 hover:text-slate-600 text-xs cursor-pointer select-none">👁️</button>
-                            </div>
-                        </div>
-                        <button type="submit" id="update-pwd-btn" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-2.5 rounded-xl text-xs transition cursor-pointer">
-                            🔄 تحديث كلمة المرور سحابياً
-                        </button>
-                    </form>
-                </div>
-
-                <div class="bg-white p-6 rounded-3xl shadow-xs border border-rose-100 bg-rose-50/10 space-y-3">
-                    <h3 class="text-xs font-bold text-rose-600 tracking-wider uppercase border-b border-rose-100 pb-2">🚨 إدارة الطوارئ وتزحيف المواعيد</h3>
-                    <div>
-                        <input type="date" id="shift-date-input" class="w-full p-2 border border-slate-200 bg-white rounded-xl text-xs text-slate-700 outline-none">
-                    </div>
-                    <button id="shift-patients-btn" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2 rounded-xl text-xs shadow-xs cursor-pointer">تزحيف مرضى this day لليوم التالي فوراً</button>
-                </div>
-
-                <div class="bg-white p-6 rounded-3xl shadow-xs border border-slate-100">
-                    <h2 class="text-sm font-bold mb-4 border-b border-slate-50 pb-3 text-slate-700">⚙️ التحكم بديناميكية العيادة والـ AI</h2>
-                    <form id="settings-form" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 mb-1.5">الحد الأقصى للمرضى باليوم</label>
-                            <input type="number" id="max_patients" value="30" class="w-full p-3 border border-slate-200 rounded-xl outline-none text-center font-bold text-slate-700 text-sm">
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-500 mb-1.5">ساعة البدء</label>
-                                <input type="time" id="start_hour" value="16:00" class="w-full p-3 border border-slate-200 rounded-xl outline-none text-center text-slate-700 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-500 mb-1.5">ساعة الإغلاق</label>
-                                <input type="time" id="end_hour" value="22:00" class="w-full p-3 border border-slate-200 rounded-xl outline-none text-center text-slate-700 text-sm">
-                            </div>
-                        </div>
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl text-xs cursor-pointer">حفظ وتحديث النظام</button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="lg:col-span-2 bg-white p-6 rounded-3xl shadow-xs border border-slate-100 self-start">
-                <h2 class="text-sm font-bold mb-4 border-b border-slate-50 pb-3 text-slate-700">📅 جدول الحجوزات الواردة حياً (AI + سكرتارية)</h2>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-right border-collapse" id="appointments-table">
-                        <thead>
-                            <tr class="bg-slate-50/80 text-slate-500 text-[11px] font-bold border-b border-slate-100">
-                                <th class="p-3">اسم المريض</th>
-                                <th class="p-3">العمر</th>
-                                <th class="p-3">رقم الهاتف</th>
-                                <th class="p-3">الموعد المؤكد</th>
-                                <th class="p-3">الشكوى المرضية</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100 text-xs text-slate-600" id="table-body">
-                            <tr><td colspan="5" class="p-8 text-center text-slate-400 font-medium">المنصة تعمل بالوضع المحلي بنجاح. بانتظار ربط سوبابيس حياً...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+                <button id="doc-logout-btn" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-semibold transition cursor-pointer">تسجيل خروج</button>
             </div>
         </div>
-    </div>
 
-    <div id="ad-banner-container" class="fixed bottom-4 left-4 right-4 z-50 bg-white/95 backdrop-blur-md p-3 rounded-2xl shadow-xl border border-slate-100 flex items-center justify-between gap-4 max-w-5xl mx-auto transition-all duration-300">
-        <a id="ad-link" href="#" target="_blank" class="flex items-center gap-3 w-full hover:opacity-95 transition">
-            <img id="ad-img" src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=500" alt="إعلان ممول" class="w-12 h-12 rounded-xl object-cover border border-slate-100 shrink-0">
-            <div>
-                <span id="ad-badge-type" class="bg-amber-100 text-amber-800 text-[9px] font-extrabold px-1.5 py-0.5 rounded-md uppercase tracking-wider block w-max mb-1">إعلان ممول SPONSORED</span>
-                <p id="ad-text-content" class="text-xs font-semibold text-slate-700 line-clamp-1">جاري تحميل الإعلان الممول المخصص للمنصة...</p>
-            </div>
-        </a>
-        <button onclick="document.getElementById('ad-banner-container').style.display='none'" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg text-xs cursor-pointer">✕</button>
+        <div class="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm text-center text-slate-500 text-sm">
+            🔄 جاري تحميل وتهيئة بيانات لوحة التحكم والربط السحابي مع قاعدة البيانات...
+        </div>
     </div>
 
     <script>
         const SUPABASE_URL = "https://dpyshuhinqruhaqftydkl.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_h0L6PY42fnjxfBjwAfh3Cw_Lr6zUgMO"; 
-        
-        let supabase = null;
-        let currentAdId = null;
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweXNodWhpbnFydWhhcWZ0eWRrbCIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzE2ODAyMTgyLCJleHAiOjIwMzIzNzgxODJ9.h0L6PY42fnjxfBjwAfh3Cw_Lr6zUgMO"; 
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        try {
-            if(SUPABASE_ANON_KEY !== "ضع_مفتاح_sb_public_الخاص_بمشروعك_هنا") {
-                supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            }
-        } catch(e) { console.error("سوبابيس غير متصل"); }
+        const statusDot = document.getElementById('db-status-dot');
+        const statusText = document.getElementById('db-status-text');
 
-        // 🧠 كود تشغيل العين السحرية لحقل كلمة المرور بداخل اللوحة
-        const newPasswordInput = document.getElementById('new-password');
-        const toggleDashboardPwd = document.getElementById('toggle-dashboard-pwd');
-        
-        toggleDashboardPwd.addEventListener('click', () => {
-            if (newPasswordInput.type === 'password') {
-                newPasswordInput.type = 'text';
-                toggleDashboardPwd.innerText = '🔒';
-            } else {
-                newPasswordInput.type = 'password';
-                toggleDashboardPwd.innerText = '👁️';
-            }
-        });
-
-        // 🚀 كود معالجة وتغيير كلمة السر حياً بداخل قاعدة بيانات سوبابيس الآمنة
-        const passwordForm = document.getElementById('password-change-form');
-        const updatePwdBtn = document.getElementById('update-pwd-btn');
-
-        passwordForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!supabase) { alert("النظام في الوضع المعاين المحلي، لا يمكن التحديث سحابياً."); return; }
-
-            const passwordValue = newPasswordInput.value;
-            updatePwdBtn.disabled = true;
-            updatePwdBtn.innerText = "⏳ جاري التحديث سحابياً...";
-
-            const { data, error } = await supabase.auth.updateUser({
-                password: passwordValue
-            });
-
-            updatePwdBtn.disabled = false;
-            updatePwdBtn.innerText = "🔄 تحديث كلمة المرور سحابياً";
-
-            if (error) {
-                alert("⚠️ فشل تحديث كلمة المرور: " + error.message);
-            } else {
-                alert("🎉 تم تغيير كلمة المرور للحساب بنجاح وأمان تفرضي كامل!");
-                newPasswordInput.value = "";
-            }
-        });
-
-        async function checkUserSession() {
-            if(!supabase) return;
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) { 
-                window.location.href = "./index.html"; 
-            } else {
-                fetchClinicData(session.user.id);
-            }
-        }
-
-        async function fetchClinicData(userId) {
-            const { data: clinic, error } = await supabase.from('clinics').select('*').eq('id', userId).single();
-            if (clinic) {
-                document.getElementById('clinic-name-title').innerText = "لوحة تحكم " + clinic.name;
-                
-                const badge = document.getElementById('sub-status-badge');
-                if(clinic.subscription_status === 'active' || clinic.subscription_status === 'trial') {
-                    badge.className = "px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700";
-                    badge.innerText = clinic.subscription_status === 'active' ? "نشط ومفعل" : "فترة تجريبية";
-                } else {
-                    badge.className = "px-3 py-1 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700";
-                    badge.innerText = "منتهي الاشتراك";
-                }
-                
-                if(clinic.subscription_expires_at) {
-                    document.getElementById('sub-expiry-date').innerText = new Date(clinic.subscription_expires_at).toLocaleDateString('ar-EG');
-                }
-
-                const { data: activeAds } = await supabase.from('ads').select('*').eq('is_active', true).order('created_at', { ascending: false }).limit(1);
-
-                if (activeAds && activeAds.length > 0) {
-                    const currentAd = activeAds[0];
-                    currentAdId = currentAd.id;
-                    
-                    document.getElementById('ad-img').src = currentAd.ad_image_url;
-                    document.getElementById('ad-link').href = currentAd.ad_link_url;
-                    
-                    let typeLabel = currentAd.ad_type === 'laboratory' ? '🔬 مختبرات وعيادات تحليلات' : currentAd.ad_type === 'treatment' ? '💊 أدوية وعلاجات طبية' : '🏥 مراكز تخصصية';
-                    document.getElementById('ad-badge-type').innerText = `إعلان ممول | ${typeLabel}`;
-                    document.getElementById('ad-text-content').innerText = currentAd.ad_text;
-                }
-            }
-        }
-
-        document.getElementById('ad-link').addEventListener('click', async (e) => {
-            if (!supabase || !currentAdId) return;
+        async function checkDocAuth() {
             try {
-                const { data: adData } = await supabase.from('ads').select('total_clicks').eq('id', currentAdId).single();
-                if(adData) {
-                    await supabase.from('ads').update({ total_clicks: (adData.total_clicks + 1) }).eq('id', currentAdId);
-                }
-            } catch(err) { console.error("فشل تتبع النقرة:", err); }
-        });
-
-        document.getElementById('logout-btn').addEventListener('click', async () => {
-            if(confirm("هل تريد تسجيل الخروج؟")) {
-                try {
-                    if(supabase) { await supabase.auth.signOut(); }
-                } catch(e) {}
-                window.location.href = "./index.html";
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) { window.location.href = "./index.html"; return; }
+                
+                statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-xs shadow-emerald-500/50";
+                statusText.innerText = "الداتا بيس آمنة 🟢";
+                statusText.className = "text-[10px] font-bold text-emerald-600";
+            } catch(e) {
+                statusDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500/50";
+                statusText.innerText = "خطأ اتصال 🔴";
             }
+        }
+
+        document.getElementById('doc-logout-btn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = "./index.html";
         });
 
-        if(supabase) {
-            document.getElementById('conn-status').className = "text-xs font-normal text-emerald-600 px-2 py-0.5 bg-emerald-50 rounded-md border border-emerald-100";
-            document.getElementById('conn-status').innerText = "متصل سحابياً";
-            checkUserSession();
-        }
+        checkDocAuth();
     </script>
 </body>
 </html>
