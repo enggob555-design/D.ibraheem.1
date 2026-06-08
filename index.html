@@ -6,6 +6,7 @@
     <title>تسجيل الدخول - عيادتي</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-config.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght=300;400;600;750&display=swap');
         body { font-family: 'Cairo', sans-serif; }
@@ -22,9 +23,7 @@
 
         <div class="text-center space-y-2 pt-2">
             <div class="flex flex-col items-center justify-center gap-2">
-                <div class="w-14 h-14 bg-linear-to-br from-teal-500 to-emerald-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-md shadow-teal-500/20">
-                    ع
-                </div>
+                <div class="w-14 h-14 bg-linear-to-br from-teal-500 to-emerald-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-md shadow-teal-500/20">ع</div>
                 <span class="text-2xl font-black bg-linear-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent tracking-tight">عيادتي</span>
             </div>
             <p class="text-xs text-slate-400">نظام التحقق الذكي من الرتب وتوجيه الحسابات مركزيتًّاً</p>
@@ -66,10 +65,7 @@
     </div>
 
     <script>
-        const SUPABASE_URL = "https://dpyshuhinqruhaqftydkl.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweXNodWhpbnFydWhhcWZ0eWRrbCIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzE2ODAyMTgyLCJleHAiOjIwMzIzNzgxODJ9.h0L6PY42fnjxfBjwAfh3Cw_Lr6zUgMO"; 
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+        // ⚠️ تم حذف أسطر تعريف supabase لأنها تُستدعى الآن من الملف الخارجي تلقائياً
         const loginForm = document.getElementById('login-form');
         const alertMessage = document.getElementById('alert-message');
         const submitBtn = document.getElementById('submit-btn');
@@ -90,7 +86,7 @@
                 statusText.className = "text-[10px] font-bold text-emerald-600";
             } catch (err) {
                 statusDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500 shadow-xs shadow-rose-500/50";
-                statusText.innerText = "خطأ في الاتصال 🔴";
+                statusText.innerText = "خطأ في المفتاح/الاتصال 🔴";
                 statusText.className = "text-[10px] font-bold text-rose-600";
             }
         }
@@ -134,7 +130,7 @@
             }
 
             if (userRole.role === 'super_admin') {
-                window.location.href = "./admin-ads.html";
+                window.location.href = "./admin-subscriptions.html";
             } else {
                 window.location.href = "./dashboard.html";
             }
@@ -152,11 +148,7 @@
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
-                if (error.message.includes("Invalid login credentials")) {
-                    showAlert("⚠️ البريد الإلكتروني أو كلمة المرور غير صحيحة. يرجى التحقق والمحاولة مجدداً.", "error");
-                } else {
-                    showAlert("⚠️ حدث خطأ في الاتصال: " + error.message, "error");
-                }
+                showAlert("⚠️ البريد الإلكتروني أو كلمة المرور غير صحيحة.", "error");
                 submitBtn.disabled = false;
                 submitBtn.innerText = "🔑 تسجيل الدخول الآمن";
             } else {
