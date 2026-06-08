@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة الإدارة - عيادتي</title>
+    <title>إدارة الإعلانات - عيادتي الأدمن</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-config.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght=300;400;600;750&display=swap');
         body { font-family: 'Cairo', sans-serif; }
@@ -18,60 +19,48 @@
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-white font-black text-xl">ع</div>
                 <div>
-                    <h1 class="text-xl font-bold text-white">لوحة السوبر أدمن - <span class="text-teal-400">عيادتي</span> 👑</h1>
-                    <p class="text-xs text-slate-400">إدارة التراخيص والإعلانات المركزية بالنظام</p>
+                    <h1 class="text-lg font-bold text-white">لوحة الإعلانات المركزية 📢</h1>
+                    <p class="text-xs text-slate-400">توجيه البنرات الترويجية والعروض للأطباء في لوحة التحكم</p>
                 </div>
             </div>
-            
-            <div class="flex items-center gap-3">
-                <div class="flex items-center gap-1.5 bg-slate-900/50 px-3 py-1.5 rounded-full border border-slate-700">
-                    <span id="db-status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                    <span id="db-status-text" class="text-[10px] font-bold text-slate-400">جاري الفحص الإداري...</span>
-                </div>
-                <button id="logout-btn" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer">خروج آمن</button>
-            </div>
+            <a href="./admin-subscriptions.html" class="text-xs bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-xl transition font-semibold">العودة للاشتراكات</a>
         </div>
 
-        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 text-center text-slate-400 text-sm">
-            ⚙️ جاري جلب ومزامنة لوحات الإعلانات والجداول العليا من سيرفر عيادتي الرئيسي...
+        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl space-y-4">
+            <h2 class="text-sm font-bold text-teal-400 mb-2">✨ إضافة إعلان ترويجي جديد للمنصة</h2>
+            <form id="ads-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">عنوان الإعلان (Title)</label>
+                    <input type="text" id="ad-title" required class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl text-sm outline-none text-white placeholder-slate-500" placeholder="مثال: خصم 50% على تجديد الاشتراك السنوي">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">رابط البنرات الإعلاني (Image URL)</label>
+                    <input type="url" id="ad-image" required class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl text-sm text-left outline-none text-white placeholder-slate-500" dir="ltr" placeholder="https://example.com/banner.jpg">
+                </div>
+                <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl text-xs transition shadow-md cursor-pointer">📢 نشر الإعلان سحابياً</button>
+            </form>
         </div>
     </div>
 
     <script>
-        const SUPABASE_URL = "https://dpyshuhinqruhaqftydkl.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweXNodWhpbnFydWhhcWZ0eWRrbCIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzE2ODAyMTgyLCJleHAiOjIwMzIzNzgxODJ9.h0L6PY42fnjxfBjwAfh3Cw_Lr6zUgMO"; 
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // الحماية الأمنية المخصصة للسوبر أدمن فقط
+        async function checkAdminSecurity() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) { window.location.href = "./index.html"; return; }
 
-        const statusDot = document.getElementById('db-status-dot');
-        const statusText = document.getElementById('db-status-text');
-
-        async function checkSecurity() {
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) { window.location.href = "./index.html"; return; }
-
-                const { data: userRole } = await supabase.from('user_roles').select('role').eq('user_id', session.user.id).single();
-                if (!userRole || userRole.role !== 'super_admin') {
-                    alert("🛑 غير مسموح لك بدخول اللوحة الإدارية العليا!");
-                    window.location.href = "./index.html";
-                    return;
-                }
-                
-                statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-xs shadow-emerald-500/50";
-                statusText.innerText = "اتصال مشرف مستقر 🟢";
-                statusText.className = "text-[10px] font-bold text-emerald-400";
-            } catch(e) {
-                statusDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
-                statusText.innerText = "خطأ صلاحيات 🔴";
+            const { data: userRole } = await supabase.from('user_roles').select('role').eq('user_id', session.user.id).single();
+            if (!userRole || userRole.role !== 'super_admin') {
+                alert("🛑 صلاحيات غير كافية! مخصص للمشرفين فقط.");
+                window.location.href = "./index.html";
             }
         }
 
-        document.getElementById('logout-btn').addEventListener('click', async () => {
-            await supabase.auth.signOut();
-            window.location.href = "./index.html";
+        document.getElementById('ads-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert("🎉 تم محاكاة رفع الإعلان بنجاح، الجداول محمية وجاهزة للربط الكامل!");
         });
 
-        checkSecurity();
+        checkAdminSecurity();
     </script>
 </body>
 </html>
