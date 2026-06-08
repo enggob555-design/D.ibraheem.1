@@ -3,115 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل طبيب جديد - منصة العيادات الذكية</title>
+    <title>إنشاء حساب جديد - عيادتي</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght=400;600;750&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght=300;400;600;750&display=swap');
         body { font-family: 'Cairo', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased flex items-center justify-center min-h-screen p-4">
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex items-center justify-center p-4">
 
-    <div class="max-w-md w-full bg-white p-8 rounded-3xl shadow-xs border border-slate-100 space-y-6">
+    <div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl border border-slate-100 space-y-6 relative overflow-hidden">
         
-        <div class="text-center space-y-2">
-            <div class="w-16 h-16 bg-linear-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-md shadow-blue-500/20 mx-auto tracking-wider">
-                Dr
-            </div>
-            <h1 class="text-xl font-bold text-slate-900 mt-4">تسجيل طبيب جديد</h1>
-            <p class="text-xs text-slate-400">أنشئ حسابك الآن للانضمام إلى مجتمع الأطباء النشطين</p>
+        <div class="absolute top-4 left-4 flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100 shadow-xs">
+            <span id="db-status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+            <span id="db-status-text" class="text-[10px] font-bold text-slate-500">جاري فحص الربط...</span>
         </div>
+
+        <div class="text-center space-y-2 pt-2">
+            <div class="flex flex-col items-center justify-center gap-2">
+                <div class="w-14 h-14 bg-linear-to-br from-teal-500 to-emerald-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-md shadow-teal-500/20">
+                    ع
+                </div>
+                <span class="text-2xl font-black bg-linear-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent tracking-tight">عيادتي</span>
+            </div>
+            <p class="text-xs text-slate-400">انضم إلينا الآن وقم بإدارة عيادتك ومواعيدك بذكاء</p>
+        </div>
+
+        <div id="alert-message" class="hidden text-xs font-semibold p-3.5 rounded-xl border transition-all duration-300"></div>
 
         <form id="register-form" class="space-y-4">
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1.5">الاسم الكامل (الدكتور/ة)</label>
-                <input type="text" id="full-name" required class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition text-sm" placeholder="د. إبراهيم محمد">
+                <label class="block text-xs font-semibold text-slate-500 mb-1.5">الاسم الكامل (Full Name)</label>
+                <input type="text" id="full-name" required class="w-full p-3 border border-slate-200 rounded-xl outline-none text-sm placeholder-slate-300" placeholder="د. أحمد علي">
             </div>
 
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1.5">البريد الإلكتروني</label>
-                <input type="email" id="email" required class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition text-sm text-left" dir="ltr" placeholder="doctor@example.com">
+                <label class="block text-xs font-semibold text-slate-500 mb-1.5">البريد الإلكتروني (Email)</label>
+                <input type="email" id="email" required class="w-full p-3 border border-slate-200 rounded-xl outline-none text-sm text-left placeholder-slate-300" dir="ltr" placeholder="doctor@myclinic.com">
             </div>
-
+            
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1.5">كلمة المرور</label>
-                <input type="password" id="password" required class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition text-sm text-left" dir="ltr" placeholder="••••••••">
+                <label class="block text-xs font-semibold text-slate-500 mb-1.5">كلمة المرور (Password)</label>
+                <div class="relative flex items-center">
+                    <input type="password" id="password" required class="w-full p-3 pl-12 border border-slate-200 rounded-xl outline-none text-sm text-left placeholder-slate-300" dir="ltr" placeholder="••••••••">
+                    <button type="button" id="toggle-password-btn" class="absolute left-3 text-slate-400 hover:text-slate-600 p-2 text-sm cursor-pointer select-none transition z-10 flex items-center justify-center">
+                        <svg id="eye-icon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
-            <button type="submit" id="register-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition duration-200 text-sm cursor-pointer shadow-xs">
-                إنشاء حساب جديد
+            <button type="submit" id="submit-btn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded-xl text-xs shadow-xs transition flex items-center justify-center gap-2 cursor-pointer">
+                <span>✨ إنشاء حساب جديد</span>
             </button>
         </form>
 
-        <div id="status-msg" class="text-center text-xs font-bold hidden bg-slate-50 p-3 rounded-xl border"></div>
-
-        <div class="text-center pt-2 border-t border-slate-100">
-            <a href="./index.html" class="text-xs text-blue-600 font-semibold hover:underline">لديك حساب بالفعل؟ سجل الدخول</a>
+        <div class="text-center pt-2">
+            <p class="text-xs text-slate-500">تمتلك حساباً بالفعل؟ <a href="./index.html" class="text-teal-600 hover:underline font-bold">تسجيل الدخول</a></p>
         </div>
     </div>
 
     <script>
         const SUPABASE_URL = "https://dpyshuhinqruhaqftydkl.supabase.co";
-        const SUPABASE_ANON_KEY = "ضع_مفتاح_ANON_الخاص_بمشروعك_هنا"; 
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweXNodWhpbnFydWhhcWZ0eWRrbCIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzE2ODAyMTgyLCJleHAiOjIwMzIzNzgxODJ9.h0L6PY42fnjxfBjwAfh3Cw_Lr6zUgMO"; 
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        document.getElementById('register-form').addEventListener('submit', async (e) => {
+        const registerForm = document.getElementById('register-form');
+        const alertMessage = document.getElementById('alert-message');
+        const submitBtn = document.getElementById('submit-btn');
+        const fullNameInput = document.getElementById('full-name');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const togglePasswordBtn = document.getElementById('toggle-password-btn');
+        const eyeIcon = document.getElementById('eye-icon');
+        const statusDot = document.getElementById('db-status-dot');
+        const statusText = document.getElementById('db-status-text');
+
+        // 1️⃣ فحص حالة الربط بالداتا بيس وتحديث الإشارة الترحيبية
+        async function testDatabaseConnection() {
+            try {
+                const { error } = await supabase.from('user_roles').select('role').limit(1);
+                if (error && error.message.includes("apiKey")) throw new Error();
+                statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-xs shadow-emerald-500/50";
+                statusText.innerText = "متصل سحابياً 🟢";
+                statusText.className = "text-[10px] font-bold text-emerald-600";
+            } catch (err) {
+                statusDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500 shadow-xs shadow-rose-500/50";
+                statusText.innerText = "خطأ في الاتصال 🔴";
+                statusText.className = "text-[10px] font-bold text-rose-600";
+            }
+        }
+
+        // 2️⃣ تفعيل ميزة إظهار وإخفاء كلمة المرور (العين السحرية المستقرة)
+        togglePasswordBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const fullName = document.getElementById('full-name').value;
-            
-            const statusMsg = document.getElementById('status-msg');
-            const registerBtn = document.getElementById('register-btn');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.822 7.822L21 21m-2.228-2.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88`;
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>`;
+            }
+        });
 
-            statusMsg.classList.add('hidden');
-            registerBtn.disabled = true;
-            registerBtn.innerText = "جاري إنشاء الحساب وبث البيانات...";
+        // 3️⃣ دالة إظهار التنبيهات
+        function showAlert(message, type = 'error') {
+            alertMessage.innerText = message;
+            alertMessage.className = `text-xs font-semibold p-3.5 rounded-xl border ${type === 'error' ? 'bg-rose-50 text-rose-700 border-rose-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'}`;
+            alertMessage.classList.remove('hidden');
+        }
 
-            // 1. تسجيل الطبيب في نظام الـ Auth الخاص بـ سوبابيس
-            const { data: authData, error: authError } = await supabase.auth.signUp({
+        // 4️⃣ معالجة حدث التسجيل وإرسال البيانات للـ Auth السحابي
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            submitBtn.disabled = true;
+            submitBtn.innerText = "⏳ جاري إنشاء الحساب سحابياً...";
+            alertMessage.classList.add('hidden');
+
+            const fullName = fullNameInput.value.trim();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+
+            // تسجيل الحساب في Supabase Auth مع إضافة الاسم كـ User Metadata
+            const { data, error } = await supabase.auth.signUp({
                 email: email,
                 password: password,
                 options: {
-                    data: { display_name: fullName } // حفظ اسم الطبيب بداخل بيانات الـ Auth
+                    data: {
+                        full_name: fullName
+                    }
                 }
             });
 
-            if (authError) {
-                statusMsg.className = "text-center text-xs font-bold text-rose-600 bg-rose-50 p-3 rounded-xl border border-rose-100";
-                statusMsg.innerText = "فشل التسجيل: " + authError.message;
-                statusMsg.classList.remove('hidden');
-                registerBtn.disabled = false;
-                registerBtn.innerText = "إنشاء حساب جديد";
-                return;
-            }
-
-            if (authData && authData.user) {
-                // 2. إدخال بيانات الطبيب الإضافية في جدول عياداتك (clinics) وضبط حالته الافتراضية كـ (انتظار التفعيل)
-                const { error: dbError } = await supabase.from('clinics').insert([{
-                    id: authData.user.id, // ربط مباشر مع الـ Auth User ID
-                    name: fullName,
-                    subscription_status: 'trial', // أو 'pending' حسب رغبتك كصاحب سيرفر
-                    subscription_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // تفعيل تجريبي تلقائي لمدة 7 أيام مثلاً
-                }]);
-
-                if (dbError) {
-                    statusMsg.className = "text-center text-xs font-bold text-amber-600 bg-amber-50 p-3 rounded-xl border border-amber-100";
-                    statusMsg.innerText = "تم إنشاء الحساب، لكن فشل تحديث جدول العيادة: " + dbError.message;
-                    statusMsg.classList.remove('hidden');
-                } else {
-                    statusMsg.className = "text-center text-xs font-bold text-emerald-600 bg-emerald-50 p-3 rounded-xl border border-emerald-100";
-                    statusMsg.innerText = "🎉 تم تسجيل حسابك بنجاح! جاري تحويلك لصفحة الدخول...";
-                    statusMsg.classList.remove('hidden');
-                    
-                    setTimeout(() => {
-                        window.location.href = "./index.html"; // تحويل الطبيب لصفحة الدخول فوراً
-                    }, 2000);
-                }
+            if (error) {
+                showAlert("⚠️ تعذر التسجيل: " + error.message, "error");
+                submitBtn.disabled = false;
+                submitBtn.innerText = "✨ إنشاء حساب جديد";
+            } else {
+                showAlert("🎉 تم إنشاء الحساب بنجاح! جاري تحويلك لصفحة تسجيل الدخول للحصول على صلاحية الرتبة...", "success");
+                
+                // توجيه تلقائي بعد ثانيتين لإتاحة الفرصة للمستخدم لقراءة التنبيه
+                setTimeout(() => {
+                    window.location.href = "./index.html";
+                }, 2500);
             }
         });
+
+        testDatabaseConnection();
     </script>
 </body>
 </html>
