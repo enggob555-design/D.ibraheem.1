@@ -8,8 +8,6 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.js"></script>
     
-    <script src="./supabase-config.js"></script>
-    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght=300;400;600;750&display=swap');
         body { font-family: 'Cairo', sans-serif; }
@@ -68,6 +66,13 @@
     </div>
 
     <script>
+        // 2️⃣ إعداد متغيرات سوبابيس محلياً داخل الصفحة لضمان الاستقرار التام
+        const SUPABASE_URL = "https://dpyshuhinqruhaqftydkl.supabase.co";
+        const SUPABASE_ANON_KEY = "EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweXNodWhpbnFueGhhcWZkeWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Mzc4ODQsImV4cCI6MjA5NjQxMzg4NH0.TpHanzVxjMEOJM0P3Oioic_odTmp7JJ-fFzBblOJVs0";
+        
+        // إنشاء اتصال نظيف ومباشر بالاعتماد على دالة سوبابيس العالمية
+        const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
         const loginForm = document.getElementById('login-form');
         const alertMessage = document.getElementById('alert-message');
         const submitBtn = document.getElementById('submit-btn');
@@ -79,17 +84,25 @@
         const statusDot = document.getElementById('db-status-dot');
         const statusText = document.getElementById('db-status-text');
 
-        // دالة فحص الربط المستقرة والمتوافقة مع جيت هاب
+        // دالة فحص الربط المباشرة مع معالجة الأخطاء التفصيلية
         async function testDatabaseConnection() {
             try {
-                if (!window.supabase) { throw new Error("المكتبة غير معرفة بعد"); }
-                const { error } = await window.supabase.from('user_roles').select('role').limit(1);
-                if (error && error.message.includes("apiKey")) throw new Error();
+                if (!supabase) {
+                    throw new Error("لم يتم تحميل مكتبة سوبابيس بشكل صحيح");
+                }
+                
+                const { error } = await supabase.from('user_roles').select('role').limit(1);
+                
+                if (error) {
+                    console.error("Supabase Error Details:", error);
+                    throw error;
+                }
                 
                 statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-xs shadow-emerald-500/50";
                 statusText.innerText = "متصل سحابياً 🟢";
                 statusText.className = "text-[10px] font-bold text-emerald-600";
             } catch (err) {
+                console.error("Connection Catch Error:", err);
                 statusDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500 shadow-xs shadow-rose-500/50";
                 statusText.innerText = "خطأ في المفتاح/الاتصال 🔴";
                 statusText.className = "text-[10px] font-bold text-rose-600";
@@ -124,11 +137,11 @@
         async function redirectUserByRole(userId) {
             submitBtn.disabled = true;
             submitBtn.innerText = "🔄 جاري فحص الرتبة...";
-            const { data: userRole, error } = await window.supabase.from('user_roles').select('role').eq('user_id', userId).single();
+            const { data: userRole, error } = await supabase.from('user_roles').select('role').eq('user_id', userId).single();
 
             if (error || !userRole) {
                 showAlert("⚠️ الحساب مسجل، لكنه بانتظار تفعيل وترخيص الإدارة السحابية.", "error");
-                await window.supabase.auth.signOut();
+                await supabase.auth.signOut();
                 submitBtn.disabled = false;
                 submitBtn.innerText = "🔑 تسجيل الدخول الآمن";
                 return;
@@ -143,6 +156,8 @@
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (!supabase) return;
+            
             submitBtn.disabled = true;
             submitBtn.innerText = "⏳ جاري فحص الهوية...";
             alertMessage.classList.add('hidden');
@@ -150,7 +165,7 @@
             const email = emailInput.value.trim();
             const password = passwordInput.value;
 
-            const { data, error } = await window.supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
                 showAlert("⚠️ البريد الإلكتروني أو كلمة المرور غير صحيحة.", "error");
@@ -168,7 +183,7 @@
         });
 
         loadSavedCredentials();
-        // تأخير بسيط للفحص للتأكد من اكتمال استدعاء الملفات الخارجية في المتصفح
+        // تشغيل الفحص بعد نصف ثانية للتأكد من اكتمال قراءة الـ CDN
         setTimeout(testDatabaseConnection, 500);
     </script>
 </body>
