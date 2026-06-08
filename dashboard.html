@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة إدارة العيادة الذكية المتكاملة</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght=300;400;600;750&display=swap');
+        body { font-family: 'Cairo', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+
+    <div class="max-w-7xl mx-auto p-4 md:p-8">
+        <header class="flex flex-col lg:flex-row justify-between items-center mb-8 bg-white p-6 rounded-3xl shadow-xs border border-slate-100 gap-6">
+            <div class="flex items-center gap-4 w-full lg:w-auto">
+                <div class="w-14 h-14 bg-linear-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-md shadow-blue-500/20 tracking-wider shrink-0">Dr</div>
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2" id="clinic-name-title">
+                        لوحة تحكم العيادة <span id="conn-status" class="text-xs font-normal text-amber-500 px-2 py-0.5 bg-amber-50 rounded-md border border-amber-100">وضع المعاينة المحلي</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 mt-1">نظام المزامنة والتحكم الفوري بـ AI Agent وإدارة الاشتراكات الرقمية</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-100 w-full lg:w-auto justify-center">
+                <div class="text-center sm:text-right">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">📞 الدعم الفني وتجديد الاشتراك</span>
+                    <div class="flex flex-col gap-1.5 mt-1 text-xs font-bold text-slate-700">
+                        <div class="flex items-center gap-2">
+                            <a href="tel:+9647702265652" class="hover:text-blue-600 transition"><span class="text-purple-600">Asiacell:</span> +964 770 226 5652</a>
+                            <a href="https://wa.me/9647702265652" target="_blank" class="text-emerald-600 hover:text-emerald-700 text-[11px] bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-100 flex items-center gap-0.5 transition">💬 واتساب</a>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <a href="tel:+9647502265652" class="hover:text-blue-600 transition"><span class="text-sky-600">Korek:</span> +964 750 226 5652</a>
+                            <a href="https://wa.me/9647502265652" target="_blank" class="text-emerald-600 hover:text-emerald-700 text-[11px] bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-100 flex items-center gap-0.5 transition">💬 واتساب</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
+                <div class="bg-blue-600 border border-blue-700 text-white px-6 py-3 rounded-2xl text-center shadow-xs">
+                    <span class="text-[10px] block text-blue-100 mb-0.5 font-bold tracking-wider">حجوزات اليوم الفعلية</span>
+                    <span id="today-count" class="font-bold text-2xl">0</span> <span class="text-blue-300 mx-1">/</span> <span id="max-patients-badge" class="font-bold text-lg text-blue-100">--</span>
+                </div>
+                <button id="logout-btn" class="bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-600 p-3 rounded-2xl text-xs font-bold transition border border-slate-200 cursor-pointer">🚪 خروج</button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="space-y-6">
+                <div class="bg-white p-6 rounded-3xl shadow-xs border border-slate-100 space-y-4">
+                    <h3 class="text-xs font-bold text-slate-400 tracking-wider uppercase border-b border-slate-50 pb-2">💳 ترخيص المنصة والاشتراك</h3>
+                    <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <span class="text-xs text-slate-600">حالة الخدمة الحالية:</span>
+                        <span id="sub-status-badge" class="px-3 py-1 rounded-full text-[11px] font-bold bg-slate-200 text-slate-700">جاري الفحص</span>
+                    </div>
+                    <div class="text-[11px] text-slate-500 px-1">تاريخ انتهاء الترخيص: <span id="sub-expiry-date" class="font-semibold text-slate-700">-</span></div>
+                </div>
+
+                <div class="bg-white p-6 rounded-3xl shadow-xs border border-rose-100 bg-rose-50/10 space-y-3">
+                    <h3 class="text-xs font-bold text-rose-600 tracking-wider uppercase border-b border-rose-100 pb-2">🚨 إدارة الطوارئ وتزحيف المواعيد</h3>
+                    <div>
+                        <input type="date" id="shift-date-input" class="w-full p-2 border border-slate-200 bg-white rounded-xl text-xs text-slate-700 outline-none">
+                    </div>
+                    <button id="shift-patients-btn" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2 rounded-xl text-xs shadow-xs cursor-pointer">تزحيف مرضى هذا اليوم لليوم التالي فوراً</button>
+                </div>
+
+                <div class="bg-white p-6 rounded-3xl shadow-xs border border-slate-100">
+                    <h2 class="text-sm font-bold mb-4 border-b border-slate-50 pb-3 text-slate-700">⚙️ التحكم بديناميكية العيادة والـ AI</h2>
+                    <form id="settings-form" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1.5">الحد الأقصى للمرضى باليوم</label>
+                            <input type="number" id="max_patients" value="30" class="w-full p-3 border border-slate-200 rounded-xl outline-none text-center font-bold text-slate-700 text-sm">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1.5">ساعة البدء</label>
+                                <input type="time" id="start_hour" value="16:00" class="w-full p-3 border border-slate-200 rounded-xl outline-none text-center text-slate-700 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1.5">ساعة الإغلاق</label>
+                                <input type="time" id="end_hour" value="22:00" class="w-full p-3 border border-slate-200 rounded-xl outline-none text-center text-slate-700 text-sm">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl text-xs">حفظ وتحديث النظام</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 bg-white p-6 rounded-3xl shadow-xs border border-slate-100 self-start">
+                <h2 class="text-sm font-bold mb-4 border-b border-slate-50 pb-3 text-slate-700">📅 جدول الحجوزات الواردة حياً</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse" id="appointments-table">
+                        <thead>
+                            <tr class="bg-slate-50/80 text-slate-500 text-[11px] font-bold border-b border-slate-100">
+                                <th class="p-3">اسم المريض</th>
+                                <th class="p-3">العمر</th>
+                                <th class="p-3">رقم الهاتف</th>
+                                <th class="p-3">الموعد المؤكد</th>
+                                <th class="p-3">الشكوى المرضية</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 text-xs text-slate-600">
+                            <tr><td colspan="5" class="p-8 text-center text-slate-400 font-medium">المنصة تعمل بالوضع المحلي بنجاح. بانتظار ربط سوبابيس...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://dpyshuhinqruhaqftydkl.supabase.co";
+        const SUPABASE_ANON_KEY = "ضع_مفتاح_ANON_الخاص_بمشروعك_هنا"; 
+        
+        let supabase = null;
+        try {
+            if(SUPABASE_ANON_KEY !== "ضع_مفتاح_ANON_الخاص_بمشروعك_هنا") {
+                supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+        } catch(e) {}
+
+        async function checkUserSession() {
+            if(!supabase) return; // حماية ضد التعليق إذا كانت المفاتيح فارغة
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) { window.location.href = "./index.html"; }
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            if(confirm("هل تريد تسجيل الخروج؟")) {
+                try {
+                    if(supabase) { await supabase.auth.signOut(); }
+                } catch(e) {}
+                window.location.href = "./index.html"; // سينقلك هنا فوراً حتى لو لم يكتمل كود سوبابيس
+            }
+        });
+
+        if(supabase) {
+            document.getElementById('conn-status').className = "text-xs font-normal text-emerald-600 px-2 py-0.5 bg-emerald-50 rounded-md border border-emerald-100";
+            document.getElementById('conn-status').innerText = "متصل حياً بالداتا بيس";
+            checkUserSession();
+        }
+    </script>
+</body>
+</html>
