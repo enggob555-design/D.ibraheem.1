@@ -1,6 +1,13 @@
-// ملف الإعدادات المركزي لمشروع عيادتي
+// ملف الإعدادات المركزي الموحد والمحمي - مشروع عيادتي
 const SUPABASE_URL = "https://dpyshuhinqruhaqftydkl.supabase.co";
-const SUPABASE_ANON_KEY = "EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweXNodWhpbnFueGhhcWZkeWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Mzc4ODQsImV4cCI6MjA5NjQxMzg4NH0.TpHanzVxjMEOJM0P3Oioic_odTmp7JJ-fFzBblOJVs0"; 
+const SUPABASE_ANON_KEY = "EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweXNodWhpbnFueGhhcWZkeWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Mzc4ODQsImV4cCI6MjA5NjQxMzg4NH0.TpHanzVxjMEOJM0P3Oioic_odTmp7JJ-fFzBblOJVs0";
 
-// تهيئة مكتبة سوبابيس وجعلها متاحاً للنظام ككل
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// فحص أمان وجود المكتبة قبل تفعيل الاتصال
+if (typeof supabase === 'undefined' && typeof Supabase !== 'undefined') {
+    var supabaseClient = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} else {
+    var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+// تثبيت المتغير عالمياً لتقرأه جميع الصفحات بثبات
+window.supabase = supabaseClient;
