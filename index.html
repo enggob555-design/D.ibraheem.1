@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول الموحد - منصة العيادة الذكية</title>
+    <title>تسجيل الدخول - عيادتي</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -21,33 +21,16 @@
         </div>
 
         <div class="text-center space-y-2 pt-2">
-            <div class="w-16 h-16 bg-linear-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center text-white font-black text-3xl shadow-md shadow-blue-500/20 tracking-wider mx-auto">Dr</div>
-            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">بوابة تسجيل الدخول الموحدة</h1>
-            <p class="text-xs text-slate-400">النظام الذكي للتحقق من الرتب الخمسة المعتمدة وتوجيه حسابك</p>
+            <div class="flex flex-col items-center justify-center gap-2">
+                <div class="w-14 h-14 bg-linear-to-br from-teal-500 to-emerald-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-md shadow-teal-500/20">
+                    ع
+                </div>
+                <span class="text-2xl font-black bg-linear-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent tracking-tight">عيادتي</span>
+            </div>
+            <p class="text-xs text-slate-400">نظام التحقق الذكي من الرتب وتوجيه الحسابات مركزيتًّاً</p>
         </div>
 
-        <div id="alert-message" class="hidden text-xs font-semibold p-3.5 rounded-xl border"></div>
-
-        <div class="grid grid-cols-2 gap-3">
-            <button type="button" id="google-login-btn" class="flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 p-2.5 rounded-xl text-xs font-bold transition cursor-pointer shadow-xs">
-                <svg class="w-4 h-4" viewBox="0 0 24 24">
-                    <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l3.227-3.11C18.432 2.02 15.61 1 12.24 1 5.922 1 12 5.922 1 12s4.922 11 11.24 11c6.596 0 10.983-4.63 10.983-11.173 0-.753-.08-1.334-.177-1.827H12.24z"/>
-                </svg>
-                <span>Google</span>
-            </button>
-            <button type="button" id="apple-login-btn" class="flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 p-2.5 rounded-xl text-xs font-bold transition cursor-pointer shadow-xs">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.57 2.95-1.39z"/>
-                </svg>
-                <span>Apple ID</span>
-            </button>
-        </div>
-
-        <div class="relative flex py-1 items-center">
-            <div class="flex-grow border-t border-slate-100"></div>
-            <span class="flex-shrink mx-4 text-slate-400 text-[10px] uppercase tracking-wider font-bold">أو بالطريقة الاعتيادية</span>
-            <div class="flex-grow border-t border-slate-100"></div>
-        </div>
+        <div id="alert-message" class="hidden text-xs font-semibold p-3.5 rounded-xl border transition-all duration-300"></div>
 
         <form id="login-form" class="space-y-4">
             <div>
@@ -59,34 +42,32 @@
                 <label class="block text-xs font-semibold text-slate-500 mb-1.5">كلمة المرور (Password)</label>
                 <div class="relative flex items-center">
                     <input type="password" id="password" required class="w-full p-3 pl-12 border border-slate-200 rounded-xl outline-none text-sm text-left" dir="ltr" placeholder="••••••••">
-                    <button type="button" id="toggle-password-btn" class="absolute left-3 text-slate-400 hover:text-slate-600 p-1 text-sm cursor-pointer select-none transition z-10">👁️</button>
+                    <button type="button" id="toggle-password-btn" class="absolute left-3 text-slate-400 hover:text-slate-600 p-2 text-sm cursor-pointer select-none transition z-10 flex items-center justify-center">
+                        <svg id="eye-icon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                    </button>
                 </div>
             </div>
 
             <div class="flex items-center justify-between text-xs px-1">
                 <label class="flex items-center gap-2 text-slate-500 font-semibold cursor-pointer select-none">
-                    <input type="checkbox" id="remember-me" class="w-4 h-4 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500">
-                    <span>حفظ تسجيل الدخول (تذكرني)</span>
+                    <input type="checkbox" id="remember-me" class="w-4 h-4 rounded-md border-slate-300 text-teal-600 focus:ring-teal-500">
+                    <span>تذكرني على هذا الجهاز</span>
                 </label>
-                <a href="./reset-password.html" class="text-blue-600 hover:underline font-semibold">نسيت كلمة المرور؟</a>
+                <a href="./reset-password.html" class="text-teal-600 hover:underline font-semibold">نسيت كلمة المرور؟</a>
             </div>
 
-            <button type="submit" id="submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl text-xs shadow-xs transition cursor-pointer flex items-center justify-center gap-2">
-                <span>🔑 تسجيل الدخول والنظام</span>
+            <button type="submit" id="submit-btn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded-xl text-xs shadow-xs transition flex items-center justify-center gap-2 cursor-pointer">
+                <span>🔑 تسجيل الدخول الآمن</span>
             </button>
         </form>
-
-        <div class="text-center pt-4 border-t border-slate-100 space-y-2">
-            <p class="text-xs text-slate-500">حساب طبيب جديد؟ <a href="./register.html" class="text-blue-600 hover:underline font-semibold">اضغط هنا لإنشاء العيادة</a></p>
-            <p class="text-[11px] text-slate-400">لإصدار وتفعيل الحسابات المعلقة، اتصل بـ <a href="https://wa.me/9647702265652" target="_blank" class="text-emerald-600 font-bold hover:underline">السوبر أدمن الرئيسي</a></p>
-        </div>
     </div>
 
     <script>
         const SUPABASE_URL = "https://dpyshuhinqruhaqftydkl.supabase.co";
-        // 🔒 تم دمج وتجهيز المفتاح الكامل والنهائي الخاص بمشروعك هنا بنجاح ليعمل مباشرة
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweXNodWhpbnFydWhhcWZ0eWRrbCIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzE2ODAyMTgyLCJleHAiOjIwMzIzNzgxODJ9.h0L6PY42fnjxfBjwAfh3Cw_Lr6zUgMO"; 
-        
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const loginForm = document.getElementById('login-form');
@@ -95,6 +76,7 @@
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
         const togglePasswordBtn = document.getElementById('toggle-password-btn');
+        const eyeIcon = document.getElementById('eye-icon');
         const rememberMeCheckbox = document.getElementById('remember-me');
         const statusDot = document.getElementById('db-status-dot');
         const statusText = document.getElementById('db-status-text');
@@ -102,108 +84,93 @@
         async function testDatabaseConnection() {
             try {
                 const { error } = await supabase.from('user_roles').select('role').limit(1);
-                if (error && error.message.includes("apiKey")) { throw new Error("Invalid Key"); }
+                if (error && error.message.includes("apiKey")) throw new Error();
                 statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-xs shadow-emerald-500/50";
                 statusText.innerText = "متصل سحابياً 🟢";
                 statusText.className = "text-[10px] font-bold text-emerald-600";
             } catch (err) {
                 statusDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500 shadow-xs shadow-rose-500/50";
-                statusText.innerText = "خطأ في المفاتيح 🔴";
+                statusText.innerText = "خطأ في الاتصال 🔴";
                 statusText.className = "text-[10px] font-bold text-rose-600";
             }
         }
 
         togglePasswordBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            e.stopPropagation();
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
-                togglePasswordBtn.innerText = '🔒';
+                eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.822 7.822L21 21m-2.228-2.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88`;
             } else {
                 passwordInput.type = 'password';
-                togglePasswordBtn.innerText = '👁️';
+                eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>`;
             }
         });
 
-        function checkSavedCredentials() {
-            const savedEmail = localStorage.getItem('saved_email');
-            const savedPassword = localStorage.getItem('saved_password');
-            if (savedEmail && savedPassword) {
+        function showAlert(message, type = 'error') {
+            alertMessage.innerText = message;
+            alertMessage.className = `text-xs font-semibold p-3.5 rounded-xl border ${type === 'error' ? 'bg-rose-50 text-rose-700 border-rose-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'}`;
+            alertMessage.classList.remove('hidden');
+        }
+
+        function loadSavedCredentials() {
+            const savedEmail = localStorage.getItem('remembered_clinic_email');
+            if (savedEmail) {
                 emailInput.value = savedEmail;
-                passwordInput.value = savedPassword;
                 rememberMeCheckbox.checked = true;
             }
         }
 
-        function showAlert(message, type = 'error') {
-            alertMessage.innerText = message;
-            alertMessage.classList.remove('hidden', 'bg-rose-50', 'text-rose-700', 'border-rose-100', 'bg-emerald-50', 'text-emerald-700', 'border-emerald-100', 'bg-amber-50', 'text-amber-700', 'border-amber-100');
-            if (type === 'error') { alertMessage.classList.add('bg-rose-50', 'text-rose-700', 'border-rose-100'); }
-            else if (type === 'coming_soon') { alertMessage.classList.add('bg-amber-50', 'text-amber-700', 'border-amber-100'); }
-            else { alertMessage.classList.add('bg-emerald-50', 'text-emerald-700', 'border-emerald-100'); }
-            alertMessage.classList.remove('hidden');
-        }
-
-        document.getElementById('google-login-btn').addEventListener('click', () => { showAlert("🚀 ميزة الربط المباشر بحساب Google ستكون متاحة في التحديث القادم! يرجى التسجيل بالبريد حالياً.", "coming_soon"); });
-        document.getElementById('apple-login-btn').addEventListener('click', () => { showAlert("🍏 ميزة الربط السريع بـ Apple ID قيد المراجعة الفنية وستطلق قريباً جداً!", "coming_soon"); });
-
-        async function checkExistingSession() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) { redirectUserByRole(session.user.id); }
-        }
-
         async function redirectUserByRole(userId) {
             submitBtn.disabled = true;
-            submitBtn.innerText = "🔄 جاري فحص رتبة الحساب...";
+            submitBtn.innerText = "🔄 جاري فحص الرتبة...";
             const { data: userRole, error } = await supabase.from('user_roles').select('role').eq('user_id', userId).single();
 
             if (error || !userRole) {
-                const { data: isDoc } = await supabase.from('clinics').select('id, subscription_status').eq('id', userId).single();
-                if(isDoc && isDoc.subscription_status !== 'expired') { window.location.href = "./dashboard.html"; } 
-                else {
-                    showAlert("⚠️ الحساب مسجل بنجاح، لكنه بانتظار التفعيل الفني والترخيص من قبل الإدارة.", "error");
-                    await supabase.auth.signOut(); 
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = "🔑 تسجيل الدخول والنظام";
-                }
+                showAlert("⚠️ الحساب مسجل، لكنه بانتظار تفعيل وترخيص الإدارة السحابية.", "error");
+                await supabase.auth.signOut();
+                submitBtn.disabled = false;
+                submitBtn.innerText = "🔑 تسجيل الدخول الآمن";
                 return;
             }
 
-            switch (userRole.role) {
-                case 'super_admin': window.location.href = "./admin-ads.html"; break;
-                default: window.location.href = "./dashboard.html";
+            if (userRole.role === 'super_admin') {
+                window.location.href = "./admin-ads.html";
+            } else {
+                window.location.href = "./dashboard.html";
             }
         }
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            submitBtn.disabled = true;
+            submitBtn.innerText = "⏳ جاري فحص الهوية...";
+            alertMessage.classList.add('hidden');
+
             const email = emailInput.value.trim();
             const password = passwordInput.value;
-
-            submitBtn.disabled = true;
-            submitBtn.innerText = "⏳ جاري فحص الهوية سحابياً...";
 
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
-                showAlert("⚠️ خطأ في تسجيل الدخول: " + error.message, "error");
+                if (error.message.includes("Invalid login credentials")) {
+                    showAlert("⚠️ البريد الإلكتروني أو كلمة المرور غير صحيحة. يرجى التحقق والمحاولة مجدداً.", "error");
+                } else {
+                    showAlert("⚠️ حدث خطأ في الاتصال: " + error.message, "error");
+                }
                 submitBtn.disabled = false;
-                submitBtn.innerText = "🔑 تسجيل الدخول والنظام";
+                submitBtn.innerText = "🔑 تسجيل الدخول الآمن";
             } else {
                 if (rememberMeCheckbox.checked) {
-                    localStorage.setItem('saved_email', email);
-                    localStorage.setItem('saved_password', password);
+                    localStorage.setItem('remembered_clinic_email', email);
                 } else {
-                    localStorage.removeItem('saved_email');
-                    localStorage.removeItem('saved_password');
+                    localStorage.removeItem('remembered_clinic_email');
                 }
-                showAlert("🎉 تم التحقق! جاري الدخول...", "success");
+                showAlert("🎉 تم التحقق بنجاح! جاري التوجيه...", "success");
                 redirectUserByRole(data.user.id);
             }
         });
 
-        checkSavedCredentials();
-        checkExistingSession();
+        loadSavedCredentials();
         testDatabaseConnection();
     </script>
 </body>
