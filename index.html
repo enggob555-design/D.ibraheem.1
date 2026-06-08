@@ -58,6 +58,14 @@
                 </div>
             </div>
 
+            <div class="flex items-center justify-between text-xs px-1">
+                <label class="flex items-center gap-2 text-slate-500 font-semibold cursor-pointer select-none">
+                    <input type="checkbox" id="remember-me" class="w-4 h-4 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500">
+                    <span>حفظ تسجيل الدخول (تذكرني)</span>
+                </label>
+                <a href="./reset-password.html" class="text-blue-600 hover:underline font-semibold">نسيت كلمة المرور؟</a>
+            </div>
+
             <button type="submit" id="submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl text-xs shadow-xs transition cursor-pointer flex items-center justify-center gap-2">
                 <span>🔑 تسجيل الدخول والنظام</span>
             </button>
@@ -74,8 +82,8 @@
     </div>
 
     <script>
-        // 🛠️ تم جلب الروابط الحقيقية تلقائياً من الصور الخاصة بمشروعك لتوفير وقتك
         const SUPABASE_URL = "https://dpyshuhinqruhaqftydkl.supabase.co";
+        // ⚠️ ملاحظة: ضع كود الـ ANON_KEY (sb_public) الخاص بك كاملاً هنا بدلاً من النص المؤقت
         const SUPABASE_ANON_KEY = "sb_publishable_h0L6PY42fnjxfBjwAfh3Cw_Lr6zUgMO"; 
         
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -83,10 +91,14 @@
         const loginForm = document.getElementById('login-form');
         const alertMessage = document.getElementById('alert-message');
         const submitBtn = document.getElementById('submit-btn');
+        const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
         const togglePasswordBtn = document.getElementById('toggle-password-btn');
+        const rememberMeCheckbox = document.getElementById('remember-me');
 
-        togglePasswordBtn.addEventListener('click', () => {
+        // 🔥 تشغيل تفاعلية العين السحرية لإظهار وإخفاء الباسوورد بنجاح
+        togglePasswordBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 togglePasswordBtn.innerText = '🔒';
@@ -95,6 +107,17 @@
                 togglePasswordBtn.innerText = '👁️';
             }
         });
+
+        // 🧠 فحص ميزة "تذكرني" الفورية عند تحميل الصفحة تلقائياً
+        function checkSavedCredentials() {
+            const savedEmail = localStorage.getItem('saved_email');
+            const savedPassword = localStorage.getItem('saved_password');
+            if (savedEmail && savedPassword) {
+                emailInput.value = savedEmail;
+                passwordInput.value = savedPassword;
+                rememberMeCheckbox.checked = true;
+            }
+        }
 
         function showAlert(message, type = 'error') {
             alertMessage.innerText = message;
@@ -109,7 +132,6 @@
             alertMessage.classList.remove('hidden');
         }
 
-        // إظهار رسالة "قريباً" الذكية عند الضغط على أزرار جوجل وآبل
         document.getElementById('google-login-btn').addEventListener('click', () => {
             showAlert("🚀 ميزة الربط المباشر بحساب Google ستكون متاحة في التحديث القادم حياً! يرجى التسجيل بالبريد حالياً.", "coming_soon");
         });
@@ -158,8 +180,8 @@
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
 
             submitBtn.disabled = true;
             submitBtn.innerText = "⏳ جاري فحص الهوية سحابياً...";
@@ -174,11 +196,22 @@
                 submitBtn.disabled = false;
                 submitBtn.innerText = "🔑 تسجيل الدخول والنظام";
             } else {
+                // 🔐 معالجة حفظ أو مسح البيانات المعتمدة على خيار "تذكرني" عند النجاح
+                if (rememberMeCheckbox.checked) {
+                    localStorage.setItem('saved_email', email);
+                    localStorage.setItem('saved_password', password);
+                } else {
+                    localStorage.removeItem('saved_email');
+                    localStorage.removeItem('saved_password');
+                }
+
                 showAlert("🎉 تم التحقق! جاري فحص صلاحيات التفعيل...", "success");
                 redirectUserByRole(data.user.id);
             }
         });
 
+        // تشغيل الفحص الفوري للبيانات المحفوظة وتعبئتها
+        checkSavedCredentials();
         checkExistingSession();
     </script>
 </body>
