@@ -11,7 +11,7 @@
         body { font-family: 'Cairo', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased">
+<body class="bg-slate-50 text-slate-800 antialiased pb-32">
 
     <div class="max-w-7xl mx-auto p-4 md:p-8">
         <header class="flex flex-col lg:flex-row justify-between items-center mb-8 bg-white p-6 rounded-3xl shadow-xs border border-slate-100 gap-6">
@@ -67,112 +67,4 @@
                     <div>
                         <input type="date" id="shift-date-input" class="w-full p-2 border border-slate-200 bg-white rounded-xl text-xs text-slate-700 outline-none">
                     </div>
-                    <button id="shift-patients-btn" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2 rounded-xl text-xs shadow-xs cursor-pointer">تزحيف مرضى هذا اليوم لليوم التالي فوراً</button>
-                </div>
-
-                <div class="bg-white p-6 rounded-3xl shadow-xs border border-slate-100">
-                    <h2 class="text-sm font-bold mb-4 border-b border-slate-50 pb-3 text-slate-700">⚙️ التحكم بديناميكية العيادة والـ AI</h2>
-                    <form id="settings-form" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 mb-1.5">الحد الأقصى للمرضى باليوم</label>
-                            <input type="number" id="max_patients" value="30" class="w-full p-3 border border-slate-200 rounded-xl outline-none text-center font-bold text-slate-700 text-sm">
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-500 mb-1.5">ساعة البدء</label>
-                                <input type="time" id="start_hour" value="16:00" class="w-full p-3 border border-slate-200 rounded-xl outline-none text-center text-slate-700 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-500 mb-1.5">ساعة الإغلاق</label>
-                                <input type="time" id="end_hour" value="22:00" class="w-full p-3 border border-slate-200 rounded-xl outline-none text-center text-slate-700 text-sm">
-                            </div>
-                        </div>
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl text-xs cursor-pointer">حفظ وتحديث النظام</button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="lg:col-span-2 bg-white p-6 rounded-3xl shadow-xs border border-slate-100 self-start">
-                <h2 class="text-sm font-bold mb-4 border-b border-slate-50 pb-3 text-slate-700">📅 جدول الحجوزات الواردة حياً</h2>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-right border-collapse" id="appointments-table">
-                        <thead>
-                            <tr class="bg-slate-50/80 text-slate-500 text-[11px] font-bold border-b border-slate-100">
-                                <th class="p-3">اسم المريض</th>
-                                <th class="p-3">العمر</th>
-                                <th class="p-3">رقم الهاتف</th>
-                                <th class="p-3">الموعد المؤكد</th>
-                                <th class="p-3">الشكوى المرضية</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100 text-xs text-slate-600" id="table-body">
-                            <tr><td colspan="5" class="p-8 text-center text-slate-400 font-medium">المنصة تعمل بالوضع المحلي بنجاح. بانتظار ربط سوبابيس...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const SUPABASE_URL = "https://dpyshuhinqruhaqftydkl.supabase.co";
-        const SUPABASE_ANON_KEY = "ضع_مفتاح_ANON_الخاص_بمشروعك_هنا"; 
-        
-        let supabase = null;
-        try {
-            if(SUPABASE_ANON_KEY !== "ضع_مفتاح_ANON_الخاص_بمشروعك_هنا") {
-                supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            }
-        } catch(e) {}
-
-        // التحقق الصارم من حماية الصفحة
-        async function checkUserSession() {
-            if(!supabase) return;
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) { 
-                window.location.href = "./index.html"; 
-            } else {
-                fetchClinicData(session.user.id);
-            }
-        }
-
-        // جلب بيانات العيادة الحية فور نجاح التحقق
-        async function fetchClinicData(userId) {
-            const { data: clinic, error } = await supabase.from('clinics').select('*').eq('id', userId).single();
-            if (clinic) {
-                document.getElementById('clinic-name-title').innerText = "لوحة تحكم " + clinic.name;
-                
-                const badge = document.getElementById('sub-status-badge');
-                if(clinic.subscription_status === 'active' || clinic.subscription_status === 'trial') {
-                    badge.className = "px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700";
-                    badge.innerText = clinic.subscription_status === 'active' ? "نشط ومفعل" : "فترة تجريبية";
-                } else {
-                    badge.className = "px-3 py-1 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700";
-                    badge.innerText = "منتهي الاشتراك";
-                }
-                
-                if(clinic.subscription_expires_at) {
-                    document.getElementById('sub-expiry-date').innerText = new Date(clinic.subscription_expires_at).toLocaleDateString('ar-EG');
-                }
-            }
-        }
-
-        // زر تسجيل الخروج الآمن
-        document.getElementById('logout-btn').addEventListener('click', async () => {
-            if(confirm("هل تريد تسجيل الخروج؟")) {
-                try {
-                    if(supabase) { await supabase.auth.signOut(); }
-                } catch(e) {}
-                window.location.href = "./index.html";
-            }
-        });
-
-        // تهيئة حالة الاتصال الحية
-        if(supabase) {
-            document.getElementById('conn-status').className = "text-xs font-normal text-emerald-600 px-2 py-0.5 bg-emerald-50 rounded-md border border-emerald-100";
-            document.getElementById('conn-status').innerText = "متصل سحابياً";
-            checkUserSession();
-        }
-    </script>
-</body>
-</html>
+                    <button id="shift-patients-btn" class="w
