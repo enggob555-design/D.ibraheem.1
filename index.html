@@ -49,9 +49,9 @@
     </div>
 
     <script>
-        // الروابط المباشرة لربط مشروعك
+        // الربط المباشر مع مشروعك بناءً على معلومات الـ ID الموثقة
         const SUPABASE_URL = "https://dpyshuhinqruhaqftydkl.supabase.co";
-        const SUPABASE_ANON_KEY = "ضع_مفتاح_ANON_الخاص_بمشروعك_هنا"; 
+        const SUPABASE_ANON_KEY = "sb_publishable_h0L6PY42fnjxfBjwAfh3Cw_Lr6zUgMO"; 
         
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -75,16 +75,13 @@
             if (session) { redirectUserByRole(session.user.id); }
         }
 
-        // 🧠 محرك التوجيه الذكي خماسي المسارات (5 Roles Router)
         async function redirectUserByRole(userId) {
             submitBtn.disabled = true;
             submitBtn.innerText = "🔄 جاري فحص الرتبة وتوجيهك بأمان...";
 
-            // قراءة الرتبة الفريضة من جدول user_roles
             const { data: userRole, error } = await supabase.from('user_roles').select('role').eq('user_id', userId).single();
 
             if (error || !userRole) {
-                // إذا لم توجد رتبة مسجلة بعد، نتحقق احتياطياً إن كان طبيباً بجدول العيادات
                 const { data: isDoc } = await supabase.from('clinics').select('id').eq('id', userId).single();
                 if(isDoc) {
                     window.location.href = "./dashboard.html";
@@ -96,26 +93,20 @@
                 return;
             }
 
-            // توجيه المستخدم بدقة حسب الرتبة المسترجعة حياً من السيرفر
             switch (userRole.role) {
                 case 'super_admin':
-                    // السوبر أدمن يذهب للوحة تحكم إدارة المنصة الكاملة والإعلانات والاشتراكات
                     window.location.href = "./admin-ads.html";
                     break;
                 case 'assistant_admin':
-                    // الأدمن المساعد يذهب للوحة الإدارة لمساعدتك
                     window.location.href = "./admin-ads.html";
                     break;
                 case 'doctor':
-                    // الدكتور يذهب للوحة تحكم عيادته والـ AI الخاص به
                     window.location.href = "./dashboard.html";
                     break;
                 case 'secretary':
-                    // السكرتير يدخل لإدارة الطابور وإدخال الأسماء يدوياً للعيادة المقترن بها
                     window.location.href = "./dashboard.html"; 
                     break;
                 case 'ads_agent':
-                    // مندوب الإعلانات يذهب مباشرة للوحة رفع الإعلانات وتتبع نقرات Meta API
                     window.location.href = "./admin-ads.html";
                     break;
                 default:
@@ -148,7 +139,6 @@
             }
         });
 
-        // تشغيل التحقق التلقائي عند التحميل
         checkExistingSession();
     </script>
 </body>
