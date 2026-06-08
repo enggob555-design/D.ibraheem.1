@@ -35,11 +35,15 @@
                 دخول إلى لوحة التحكم
             </button>
         </form>
+        
         <div id="error-msg" class="text-center text-xs font-bold text-rose-600 hidden bg-rose-50 p-2 rounded-xl border border-rose-100"></div>
+
+        <div class="text-center pt-2 border-t border-slate-100">
+            <a href="./register.html" class="text-xs text-blue-600 font-semibold hover:underline">ليس لديك حساب؟ سجل كطبيب جديد الآن</a>
+        </div>
     </div>
 
     <script>
-        // ضع روابط مشروعك الحقيقية هنا ليعمل الاتصال السحابي
         const SUPABASE_URL = "https://dpyshuhinqruhaqftydkl.supabase.co";
         const SUPABASE_ANON_KEY = "ضع_مفتاح_ANON_الخاص_بمشروعك_هنا"; 
         
@@ -50,6 +54,16 @@
             }
         } catch(e) { console.error("سوبابيس غير مهيأ بعد"); }
 
+        // فحص الجلسة النشطة تلقائياً لتفادي تسجيل الدخول المكرر
+        async function checkActiveSession() {
+            if(!supabase) return;
+            const { data: { session } } = await supabase.auth.getSession();
+            if(session && session.user) {
+                window.location.href = "./dashboard.html";
+            }
+        }
+        checkActiveSession();
+
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
@@ -57,7 +71,6 @@
             const errorMsg = document.getElementById('error-msg');
             const loginBtn = document.getElementById('login-btn');
 
-            // إذا لم يتم وضع المفاتيح بعد، اسمح بالدخول تجريبياً لرؤية اللوحة
             if(!supabase) {
                 errorMsg.className = "text-center text-xs font-bold text-amber-600 bg-amber-50 p-2 rounded-xl border border-amber-100";
                 errorMsg.innerText = "تنبيه: تعمل الآن بالوضع التجريبي (بدون سوبابيس). جاري تحويلك...";
