@@ -18,8 +18,9 @@
             <div class="flex items-center gap-4 w-full lg:w-auto">
                 <div class="w-14 h-14 bg-linear-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-md shadow-blue-500/20 tracking-wider shrink-0">Dr</div>
                 <div>
-                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2" id="clinic-name-title">
-                        لوحة تحكم العيادة <span id="conn-status" class="text-xs font-normal text-amber-500 px-2 py-0.5 bg-amber-50 rounded-md border border-amber-100">وضع المعاينة المحلي</span>
+                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                        <span id="clinic-name-title">لوحة تحكم العيادة</span> 
+                        <span id="conn-status" class="text-xs font-normal text-amber-500 px-2 py-0.5 bg-amber-50 rounded-md border border-amber-100">وضع المعاينة المحلي</span>
                     </h1>
                     <p class="text-xs text-slate-400 mt-1">نظام المزامنة والتحكم الفوري بـ AI Agent وإدارة الاشتراكات الرقمية</p>
                 </div>
@@ -56,7 +57,7 @@
                     <h3 class="text-xs font-bold text-slate-400 tracking-wider uppercase border-b border-slate-50 pb-2">💳 ترخيص المنصة والاشتراك</h3>
                     <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100">
                         <span class="text-xs text-slate-600">حالة الخدمة الحالية:</span>
-                        <span id="sub-status-badge" class="px-3 py-1 rounded-full text-[11px] font-bold bg-slate-200 text-slate-700">جاري الفحص</span>
+                        <span id="sub-status-badge" class="px-3 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700">جاري الفحص</span>
                     </div>
                     <div class="text-[11px] text-slate-500 px-1">تاريخ انتهاء الترخيص: <span id="sub-expiry-date" class="font-semibold text-slate-700">-</span></div>
                 </div>
@@ -86,7 +87,7 @@
                                 <input type="time" id="end_hour" value="22:00" class="w-full p-3 border border-slate-200 rounded-xl outline-none text-center text-slate-700 text-sm">
                             </div>
                         </div>
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl text-xs">حفظ وتحديث النظام</button>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl text-xs cursor-pointer">حفظ وتحديث النظام</button>
                     </form>
                 </div>
             </div>
@@ -104,7 +105,7 @@
                                 <th class="p-3">الشكوى المرضية</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100 text-xs text-slate-600">
+                        <tbody class="divide-y divide-slate-100 text-xs text-slate-600" id="table-body">
                             <tr><td colspan="5" class="p-8 text-center text-slate-400 font-medium">المنصة تعمل بالوضع المحلي بنجاح. بانتظار ربط سوبابيس...</td></tr>
                         </tbody>
                     </table>
@@ -124,24 +125,52 @@
             }
         } catch(e) {}
 
+        // التحقق الصارم من حماية الصفحة
         async function checkUserSession() {
-            if(!supabase) return; // حماية ضد التعليق إذا كانت المفاتيح فارغة
+            if(!supabase) return;
             const { data: { session } } = await supabase.auth.getSession();
-            if (!session) { window.location.href = "./index.html"; }
+            if (!session) { 
+                window.location.href = "./index.html"; 
+            } else {
+                fetchClinicData(session.user.id);
+            }
         }
 
+        // جلب بيانات العيادة الحية فور نجاح التحقق
+        async function fetchClinicData(userId) {
+            const { data: clinic, error } = await supabase.from('clinics').select('*').eq('id', userId).single();
+            if (clinic) {
+                document.getElementById('clinic-name-title').innerText = "لوحة تحكم " + clinic.name;
+                
+                const badge = document.getElementById('sub-status-badge');
+                if(clinic.subscription_status === 'active' || clinic.subscription_status === 'trial') {
+                    badge.className = "px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700";
+                    badge.innerText = clinic.subscription_status === 'active' ? "نشط ومفعل" : "فترة تجريبية";
+                } else {
+                    badge.className = "px-3 py-1 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700";
+                    badge.innerText = "منتهي الاشتراك";
+                }
+                
+                if(clinic.subscription_expires_at) {
+                    document.getElementById('sub-expiry-date').innerText = new Date(clinic.subscription_expires_at).toLocaleDateString('ar-EG');
+                }
+            }
+        }
+
+        // زر تسجيل الخروج الآمن
         document.getElementById('logout-btn').addEventListener('click', async () => {
             if(confirm("هل تريد تسجيل الخروج؟")) {
                 try {
                     if(supabase) { await supabase.auth.signOut(); }
                 } catch(e) {}
-                window.location.href = "./index.html"; // سينقلك هنا فوراً حتى لو لم يكتمل كود سوبابيس
+                window.location.href = "./index.html";
             }
         });
 
+        // تهيئة حالة الاتصال الحية
         if(supabase) {
             document.getElementById('conn-status').className = "text-xs font-normal text-emerald-600 px-2 py-0.5 bg-emerald-50 rounded-md border border-emerald-100";
-            document.getElementById('conn-status').innerText = "متصل حياً بالداتا بيس";
+            document.getElementById('conn-status').innerText = "متصل سحابياً";
             checkUserSession();
         }
     </script>
