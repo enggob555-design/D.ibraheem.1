@@ -2,37 +2,32 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>تسجيل الدخول - عيادتي</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>فحص الاتصال</title>
 </head>
 <body>
-    <div id="status" style="padding:20px; font-weight:bold; color:red;">جاري فحص الاتصال...</div>
+    <div id="log" style="font-family: sans-serif; padding: 20px;">جاري الفحص...</div>
 
     <script>
-        const URL = "https://dpyshuhinqnxhaqfdykl.supabase.co";
-        // تأكد تماماً من هذا المفتاح، يجب أن يكون Anon Key الخاص بالمشروع الفرعي حصراً
-        const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweXNodWhpbnFueGhhcWZkeWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Mzc4ODQsImV4cCI6MjA5NjQxMzg4NH0.TpHanzVxjMEOJM0P3Oioic_odTmp7JJ-fFzBblOJVs0"; 
-
-        const supabase = supabase.createClient(URL, KEY);
-
-        async function checkConnection() {
-            const statusDiv = document.getElementById('status');
-            try {
-                // محاولة الاتصال بجدول عام للتأكد من وصول السكريبت
-                const { data, error } = await supabase.from('user_roles').select('*').limit(1);
-                
-                if (error) {
-                    statusDiv.innerText = "خطأ في الاتصال: " + error.message;
-                    console.error("Supabase Error:", error);
-                } else {
-                    statusDiv.innerText = "متصل سحابياً بنجاح 🟢";
-                    statusDiv.style.color = "green";
-                }
-            } catch (err) {
-                statusDiv.innerText = "خطأ فادح: " + err.message;
+        const log = document.getElementById('log');
+        const URL = "https://dpyshuhinqnxhaqfdykl.supabase.co/rest/v1/";
+        
+        // محاولة الاتصال المباشر بدون مكتبة سوبابيس (عبر fetch)
+        fetch(URL, {
+            headers: {
+                'apikey': 'ضع_هنا_الـ_Anon_Key_الخاص_بمشروع_my_job',
+                'Authorization': 'Bearer 'ضع_هنا_الـ_Anon_Key_الخاص_بمشروع_my_job''
             }
-        }
-        checkConnection();
+        })
+        .then(response => {
+            if (response.ok) {
+                log.innerHTML = "<h1 style='color:green;'>الاتصال ناجح 🟢</h1>";
+            } else {
+                log.innerHTML = "<h1 style='color:red;'>خطأ في الاتصال: " + response.status + "</h1>";
+            }
+        })
+        .catch(err => {
+            log.innerHTML = "<h1 style='color:red;'>فشل الوصول للسيرفر: " + err + "</h1>";
+        });
     </script>
 </body>
 </html>
