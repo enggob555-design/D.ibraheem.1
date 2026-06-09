@@ -2,51 +2,33 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة عيادتي - لوحة التحكم</title>
+    <title>منصة عيادتي</title>
     <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f4f7f6; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
-        th { background-color: #007bff; color: white; }
-        h1 { color: #333; }
-    </style>
 </head>
 <body>
-
     <h1>لوحة تحكم بيانات العيادة</h1>
-    <div id="data-container">جاري جلب البيانات...</div>
+    <div id="data-container">جاري التحميل...</div>
 
     <script src="supabase-config.js"></script>
 
     <script>
-        async function fetchAndDisplayData() {
+        window.onload = async function() {
             const container = document.getElementById('data-container');
             
+            // التأكد من وجود المتغير قبل استخدامه
+            if (typeof window.supabase === 'undefined') {
+                container.innerHTML = "خطأ: لم يتم تحميل سوبابيس بشكل صحيح";
+                return;
+            }
+
             try {
-                // جلب البيانات (استبدل user_roles باسم الجدول المطلوب لاحقاً)
-                const { data, error } = await supabase.from('user_roles').select('*');
-
+                const { data, error } = await window.supabase.from('user_roles').select('*');
                 if (error) throw error;
-
-                if (data && data.length > 0) {
-                    let tableHtml = `<table><tr><th>ID</th><th>اسم الدور (Role)</th></tr>`;
-                    data.forEach(item => {
-                        tableHtml += `<tr><td>${item.id}</td><td>${item.role_name}</td></tr>`;
-                    });
-                    tableHtml += `</table>`;
-                    container.innerHTML = tableHtml;
-                } else {
-                    container.innerHTML = "لا توجد بيانات حالياً في هذا الجدول.";
-                }
+                container.innerHTML = "✅ تم الاتصال بنجاح! عدد السجلات: " + data.length;
             } catch (err) {
                 container.innerHTML = "❌ خطأ في الاتصال: " + err.message;
             }
-        }
-
-        // تنفيذ الدالة عند تحميل الصفحة
-        window.onload = fetchAndDisplayData;
+        };
     </script>
 </body>
 </html>
