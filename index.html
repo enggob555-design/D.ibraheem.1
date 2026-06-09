@@ -3,37 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <title>مشروع عيادتي</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
-
-    <div id="status" style="text-align: center; margin-top: 50px; font-size: 20px;">جاري الاتصال...</div>
+    <div id="status" style="text-align: center; margin-top: 50px; font-size: 20px;">جاري الفحص...</div>
 
     <script>
-        // 1. ضع رابط مشروعك هنا
-        const SUPABASE_URL = "https://dpyshuhinqnxhaqfdykl.supabase.co";
-        
-        // 2. ضع مفتاح الـ anon الخاص بك هنا (الذي يبدأ بـ eyJ...)
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweXNodWhpbnFueGhhcWZkeWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Mzc4ODQsImV4cCI6MjA5NjQxMzg4NH0.TpHanzVxjMEOJM0P3Oioic_odTmp7JJ-fFzBblOJVs0";
+        // التأكد من تحميل المكتبة
+        if (typeof supabase === 'undefined') {
+            document.getElementById('status').innerText = "❌ فشل تحميل المكتبة (تحقق من اتصالك)";
+            document.getElementById('status').style.color = "red";
+        } else {
+            const SUPABASE_URL = "https://dpyshuhinqnxhaqfdykl.supabase.co";
+            const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweXNodWhpbnFueGhhcWZkeWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Mzc4ODQsImV4cCI6MjA5NjQxMzg4NH0.TpHanzVxjMEOJM0P3Oioic_odTmp7JJ-fFzBblOJVs0";
 
-        // 3. إنشاء العميل
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // 4. اختبار الاتصال
-        async function testConnection() {
-            const { data, error } = await supabase.from('user_roles').select('*').limit(1);
-            
-            const statusDiv = document.getElementById('status');
-            if (error) {
-                statusDiv.innerText = "❌ خطأ في الاتصال: " + error.message;
-                statusDiv.style.color = "red";
-            } else {
-                statusDiv.innerText = "✅ تم الاتصال بنجاح بقاعدة البيانات!";
-                statusDiv.style.color = "green";
-            }
+            client.from('user_roles').select('*').limit(1)
+            .then(({ data, error }) => {
+                if (error) {
+                    document.getElementById('status').innerText = "❌ خطأ قاعدة بيانات: " + error.message;
+                    document.getElementById('status').style.color = "red";
+                } else {
+                    document.getElementById('status').innerText = "✅ تم الاتصال بنجاح بقاعدة البيانات!";
+                    document.getElementById('status').style.color = "green";
+                }
+            })
+            .catch(err => {
+                document.getElementById('status').innerText = "❌ خطأ غير متوقع: " + err;
+            });
         }
-
-        testConnection();
     </script>
 </body>
 </html>
