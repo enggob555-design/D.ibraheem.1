@@ -3,105 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول - عيادتي</title>
+    <title>تسجيل الدخول الموحد - منصة العيادة الذكية</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./supabase-config.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;750&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght=300;400;600;750&display=swap');
         body { font-family: 'Cairo', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex items-center justify-center p-4">
 
     <div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl border border-slate-100 space-y-6">
-        
-        <div class="flex items-center justify-center gap-2 mb-4">
-            <span id="db-status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-            <span id="db-status-text" class="text-[10px] font-bold text-slate-500">جاري التأكد من الاتصال...</span>
-        </div>
-
-        <div class="text-center">
-            <h1 class="text-2xl font-black text-teal-700">عيادتي</h1>
-            <p class="text-xs text-slate-400 mt-1">نظام الإدارة المركزية</p>
+        <div class="text-center space-y-2">
+            <div class="w-16 h-16 bg-linear-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center text-white font-black text-3xl shadow-md shadow-blue-500/20 tracking-wider mx-auto">Dr</div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">بوابة تسجيل الدخول الموحدة</h1>
+            <p class="text-xs text-slate-400">النظام الذكي للتحقق من الرتب الخمسة المعتمدة وتوجيه حسابك</p>
         </div>
 
         <div id="alert-message" class="hidden text-xs font-semibold p-3.5 rounded-xl border"></div>
 
         <form id="login-form" class="space-y-4">
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">البريد الإلكتروني</label>
-                <input type="email" id="email" required class="w-full p-3 border rounded-xl text-sm" dir="ltr" placeholder="user@clinic.com">
+                <label class="block text-xs font-semibold text-slate-500 mb-1.5">البريد الإلكتروني (Email)</label>
+                <input type="email" id="email" required class="w-full p-3 border border-slate-200 rounded-xl outline-none text-sm text-left" dir="ltr" placeholder="user@platform.com">
             </div>
             
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">كلمة المرور</label>
-                <div class="relative flex items-center">
-                    <input type="password" id="password" required class="w-full p-3 border rounded-xl text-sm" dir="ltr" placeholder="••••••••">
-                    <button type="button" id="toggle-password-btn" class="absolute left-3 text-slate-400 hover:text-teal-600 transition">
-                        👁️
-                    </button>
-                </div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1.5">كلمة المرور (Password)</label>
+                <input type="password" id="password" required class="w-full p-3 border border-slate-200 rounded-xl outline-none text-sm text-left" dir="ltr" placeholder="••••••••">
             </div>
 
-            <button type="submit" id="submit-btn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl text-sm transition">
-                🔑 تسجيل الدخول الآمن
+            <button type="submit" id="submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl text-xs shadow-xs transition cursor-pointer flex items-center justify-center gap-2">
+                <span>🔑 تسجيل الدخول والنظام</span>
             </button>
         </form>
+
+        <div class="text-center pt-4 border-t border-slate-100 space-y-2">
+            <p class="text-xs text-slate-500">حساب طبيب جديد؟ 
+                <a href="./register.html" class="text-blue-600 hover:underline font-semibold">اضغط هنا لإنشاء العيادة</a>
+            </p>
+            <p class="text-[11px] text-slate-400">لإصدار حسابات الأدمن، السكرتارية، أو مناديب الإعلان، اتصل بـ 
+                <a href="https://wa.me/9647702265652" target="_blank" class="text-emerald-600 font-bold hover:underline">السوبر أدمن الرئيسي</a>
+            </p>
+        </div>
     </div>
 
     <script>
-        // 1. فحص الاتصال التلقائي
-        async function checkConnection() {
-            try {
-                const { error } = await supabase.from('user_roles').select('id').limit(1);
-                if (error) throw error;
-                document.getElementById('db-status-dot').className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                document.getElementById('db-status-text').innerText = "متصل بالسيرفر 🟢";
-            } catch (e) {
-                document.getElementById('db-status-dot').className = "w-2.5 h-2.5 rounded-full bg-rose-500";
-                document.getElementById('db-status-text').innerText = "فشل الاتصال 🔴";
+        // الربط المباشر مع مشروعك بناءً على معلومات الـ ID الموثقة
+        const SUPABASE_URL = "https://dpyshuhinqnxhaqfdykl.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweXNodWhpbnFueGhhcWZkeWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Mzc4ODQsImV4cCI6MjA5NjQxMzg4NH0.TpHanzVxjMEOJM0P3Oioic_odTmp7JJ-fFzBblOJVs0"; 
+        
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const loginForm = document.getElementById('login-form');
+        const alertMessage = document.getElementById('alert-message');
+        const submitBtn = document.getElementById('submit-btn');
+
+        function showAlert(message, type = 'error') {
+            alertMessage.innerText = message;
+            alertMessage.classList.remove('hidden', 'bg-rose-50', 'text-rose-700', 'border-rose-100', 'bg-emerald-50', 'text-emerald-700', 'border-emerald-100');
+            if (type === 'error') {
+                alertMessage.classList.add('bg-rose-50', 'text-rose-700', 'border-rose-100');
+            } else {
+                alertMessage.classList.add('bg-emerald-50', 'text-emerald-700', 'border-emerald-100');
+            }
+            alertMessage.classList.remove('hidden');
+        }
+
+        async function checkExistingSession() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) { redirectUserByRole(session.user.id); }
+        }
+
+        async function redirectUserByRole(userId) {
+            submitBtn.disabled = true;
+            submitBtn.innerText = "🔄 جاري فحص الرتبة وتوجيهك بأمان...";
+
+            const { data: userRole, error } = await supabase.from('user_roles').select('role').eq('user_id', userId).single();
+
+            if (error || !userRole) {
+                const { data: isDoc } = await supabase.from('clinics').select('id').eq('id', userId).single();
+                if(isDoc) {
+                    window.location.href = "./dashboard.html";
+                } else {
+                    showAlert("⚠️ لم يتم تعيين رتبة صالحة لهذا الحساب في النظام. اتصل بالمالك الفني.", "error");
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "🔑 تسجيل الدخول والنظام";
+                }
+                return;
+            }
+
+            switch (userRole.role) {
+                case 'super_admin':
+                    window.location.href = "./admin-ads.html";
+                    break;
+                case 'assistant_admin':
+                    window.location.href = "./admin-ads.html";
+                    break;
+                case 'doctor':
+                    window.location.href = "./dashboard.html";
+                    break;
+                case 'secretary':
+                    window.location.href = "./dashboard.html"; 
+                    break;
+                case 'ads_agent':
+                    window.location.href = "./admin-ads.html";
+                    break;
+                default:
+                    showAlert("رتبة الحساب غير معروفة برمجياً.", "error");
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "🔑 تسجيل الدخول والنظام";
             }
         }
 
-        // 2. العين لإظهار كلمة المرور
-        document.getElementById('toggle-password-btn').addEventListener('click', () => {
-            const p = document.getElementById('password');
-            p.type = (p.type === 'password') ? 'text' : 'password';
-        });
-
-        // 3. التوجيه الذكي
-        async function handleLogin(e) {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('submit-btn');
-            btn.innerText = "⏳ جاري التحقق...";
-            btn.disabled = true;
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = "⏳ جاري التحقق من الهوية سحابياً...";
 
             const { data, error } = await supabase.auth.signInWithPassword({
-                email: document.getElementById('email').value,
-                password: document.getElementById('password').value
+                email: email,
+                password: password
             });
 
             if (error) {
-                alert("خطأ في البيانات: " + error.message);
-                btn.innerText = "🔑 تسجيل الدخول الآمن";
-                btn.disabled = false;
+                showAlert("⚠️ خطأ في الدخول: " + error.message, "error");
+                submitBtn.disabled = false;
+                submitBtn.innerText = "🔑 تسجيل الدخول والنظام";
             } else {
-                // جلب الرتبة وتوجيه المستخدم
-                const { data: roleData } = await supabase.from('user_roles').select('role').eq('user_id', data.user.id).single();
-                
-                if (roleData?.role === 'super_admin') {
-                    window.location.href = "./admin-subscriptions.html";
-                } else if (roleData?.role === 'secretary') {
-                    window.location.href = "./dashboard.html";
-                } else {
-                    alert("لا تملك صلاحيات كافية.");
-                }
+                showAlert("🎉 تم التحقق! جاري فحص الصلاحيات...", "success");
+                redirectUserByRole(data.user.id);
             }
-        }
+        });
 
-        document.getElementById('login-form').addEventListener('submit', handleLogin);
-        setTimeout(checkConnection, 1000);
+        checkExistingSession();
     </script>
 </body>
 </html>
