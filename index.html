@@ -1,16 +1,88 @@
-<script>
-    // استبدل كود عرض الرقم بهذا الكود
-    async function fetchData() {
-        const { data, error } = await window.supabase.from('user_roles').select('*');
-        if (data) {
-            let table = `<table border="1" style="width:100%; text-align:center;">
-                            <tr><th>ID</th><th>الدور (Role)</th></tr>`;
-            data.forEach(row => {
-                table += `<tr><td>${row.id}</td><td>${row.role_name}</td></tr>`;
-            });
-            table += `</table>`;
-            document.getElementById('data-container').innerHTML = table;
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - عيادتي</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
+        body { font-family: 'Cairo', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl border border-slate-100 space-y-6">
+        
+        <div class="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100 w-fit">
+            <span id="db-status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+            <span id="db-status-text" class="text-[10px] font-bold text-slate-500">جاري فحص الربط...</span>
+        </div>
+
+        <div class="text-center space-y-2">
+            <div class="w-14 h-14 bg-teal-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl mx-auto shadow-md">ع</div>
+            <h1 class="text-2xl font-black text-teal-700">عيادتي</h1>
+            <p class="text-xs text-slate-400">نظام التحقق الذكي للعيادة</p>
+        </div>
+
+        <div id="alert-message" class="hidden text-xs font-semibold p-3.5 rounded-xl border"></div>
+
+        <form id="login-form" class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1.5">البريد الإلكتروني</label>
+                <input type="email" id="email" required class="w-full p-3 border border-slate-200 rounded-xl text-sm text-left" dir="ltr" placeholder="user@clinic.com">
+            </div>
+            
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1.5">كلمة المرور</label>
+                <input type="password" id="password" required class="w-full p-3 border border-slate-200 rounded-xl text-sm text-left" dir="ltr" placeholder="••••••••">
+            </div>
+
+            <button type="submit" id="submit-btn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded-xl text-xs transition cursor-pointer">
+                🔑 تسجيل الدخول الآمن
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // إعدادات سوبابيس المصححة
+        const SUPABASE_URL = "https://dpyshuhinqnxhaqfdykl.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweXNodWhpbnFueGhhcWZkeWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Mzc4ODQsImV4cCI6MjA5NjQxMzg4NH0.TpHanzVxjMEOJM0P3Oioic_odTmp7JJ-fFzBblOJVs0";
+        
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const loginForm = document.getElementById('login-form');
+        const alertMessage = document.getElementById('alert-message');
+        const submitBtn = document.getElementById('submit-btn');
+
+        // فحص الاتصال عند التحميل
+        async function checkConnection() {
+            const { error } = await supabase.from('user_roles').select('role').limit(1);
+            if (!error) {
+                document.getElementById('db-status-dot').className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+                document.getElementById('db-status-text').innerText = "متصل سحابياً 🟢";
+            }
         }
-    }
-    fetchData();
-</script>
+        checkConnection();
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            submitBtn.innerText = "⏳ جاري التحقق...";
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            });
+
+            if (error) {
+                alertMessage.innerText = "⚠️ خطأ في بيانات الدخول";
+                alertMessage.className = "text-xs p-3.5 rounded-xl bg-rose-50 text-rose-700 border border-rose-100";
+                alertMessage.classList.remove('hidden');
+                submitBtn.innerText = "🔑 تسجيل الدخول الآمن";
+            } else {
+                window.location.href = "./dashboard.html"; // تأكد من وجود هذا الملف
+            }
+        });
+    </script>
+</body>
+</html>
