@@ -141,7 +141,7 @@
 
         checkExistingSession();
     </script>
-    // دالة اختبار سريعة لتشخيص المشكلة
+// دالة اختبار سريعة لتشخيص المشكلة
 async function testConnection() {
     try {
         const { data, error } = await supabase.from('user_roles').select('*').limit(1);
@@ -153,5 +153,6 @@ async function testConnection() {
     }
 }
 testConnection();
+ </script>
 </body>
 </html>
