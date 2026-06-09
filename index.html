@@ -2,32 +2,38 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>فحص الاتصال</title>
+    <title>مشروع عيادتي</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <div id="log" style="font-family: sans-serif; padding: 20px;">جاري الفحص...</div>
+
+    <div id="status" style="text-align: center; margin-top: 50px; font-size: 20px;">جاري الاتصال...</div>
 
     <script>
-        const log = document.getElementById('log');
-        const URL = "https://dpyshuhinqnxhaqfdykl.supabase.co/rest/v1/";
+        // 1. ضع رابط مشروعك هنا
+        const SUPABASE_URL = "https://dpyshuhinqnxhaqfdykl.supabase.co";
         
-        // محاولة الاتصال المباشر بدون مكتبة سوبابيس (عبر fetch)
-        fetch(URL, {
-            headers: {
-                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweXNodWhpbnFueGhhcWZkeWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Mzc4ODQsImV4cCI6MjA5NjQxMzg4NH0.TpHanzVxjMEOJM0P3Oioic_odTmp7JJ-fFzBblOJVs0',
-                'Authorization': 'Bearer 'ضع_هنا_الـ_Anon_Key_الخاص_بمشروع_my_job''
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                log.innerHTML = "<h1 style='color:green;'>الاتصال ناجح 🟢</h1>";
+        // 2. ضع مفتاح الـ anon الخاص بك هنا (الذي يبدأ بـ eyJ...)
+        const SUPABASE_ANON_KEY = "ضع_مفتاحك_هنا";
+
+        // 3. إنشاء العميل
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // 4. اختبار الاتصال
+        async function testConnection() {
+            const { data, error } = await supabase.from('user_roles').select('*').limit(1);
+            
+            const statusDiv = document.getElementById('status');
+            if (error) {
+                statusDiv.innerText = "❌ خطأ في الاتصال: " + error.message;
+                statusDiv.style.color = "red";
             } else {
-                log.innerHTML = "<h1 style='color:red;'>خطأ في الاتصال: " + response.status + "</h1>";
+                statusDiv.innerText = "✅ تم الاتصال بنجاح بقاعدة البيانات!";
+                statusDiv.style.color = "green";
             }
-        })
-        .catch(err => {
-            log.innerHTML = "<h1 style='color:red;'>فشل الوصول للسيرفر: " + err + "</h1>";
-        });
+        }
+
+        testConnection();
     </script>
 </body>
 </html>
