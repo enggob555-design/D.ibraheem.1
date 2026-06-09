@@ -134,25 +134,30 @@
             }
         }
 
-        async function redirectUserByRole(userId) {
-            submitBtn.disabled = true;
-            submitBtn.innerText = "🔄 جاري فحص الرتبة...";
-            const { data: userRole, error } = await supabase.from('user_roles').select('role').eq('user_id', userId).single();
+ async function redirectUserByRole(userId) {
+    submitBtn.disabled = true;
+    submitBtn.innerText = "🔄 جاري فحص الرتبة...";
+    
+    // سأقوم بطباعة الـ ID الذي تحاول استخدامه للتحقق منه
+    console.log("Current Logged-in User ID:", userId);
 
-            if (error || !userRole) {
-                showAlert("⚠️ الحساب مسجل، لكنه بانتظار تفعيل وترخيص الإدارة السحابية.", "error");
-                await supabase.auth.signOut();
-                submitBtn.disabled = false;
-                submitBtn.innerText = "🔑 تسجيل الدخول الآمن";
-                return;
-            }
+    const { data: userRole, error } = await supabase.from('user_roles').select('role').eq('user_id', userId).single();
 
-            if (userRole.role === 'super_admin') {
-                window.location.href = "./admin-subscriptions.html";
-            } else {
-                window.location.href = "./dashboard.html";
-            }
-        }
+    if (error) {
+        console.error("Database Error:", error);
+        showAlert("⚠️ خطأ تقني: لم نجد رتبة لهذا المستخدم. تأكد من الـ ID في القاعدة.", "error");
+        submitBtn.disabled = false;
+        submitBtn.innerText = "🔑 تسجيل الدخول الآمن";
+        return;
+    }
+
+    // التوجيه بناءً على الرتبة
+    if (userRole.role === 'super_admin') {
+        window.location.href = "./admin-subscriptions.html";
+    } else {
+        window.location.href = "./dashboard.html";
+    }
+}
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
