@@ -5,71 +5,186 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تسجيل الدخول - عيادتي</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.js"></script>
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght=300;400;600;750&display=swap');
         body { font-family: 'Cairo', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex items-center justify-center p-4">
 
-    <div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
-        <div class="text-center space-y-4">
-            <h1 class="text-2xl font-black text-teal-700">عيادتي</h1>
-            <div id="status" class="text-xs font-bold text-slate-400">جاري فحص الاتصال...</div>
+    <div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl border border-slate-100 space-y-6 relative overflow-hidden">
+        
+        <div class="absolute top-4 left-4 flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100 shadow-xs">
+            <span id="db-status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+            <span id="db-status-text" class="text-[10px] font-bold text-slate-500">جاري فحص الربط...</span>
         </div>
 
-        <form id="login-form" class="space-y-4 mt-6">
-            <input type="email" id="email" required placeholder="البريد الإلكتروني" class="w-full p-3 border rounded-xl text-sm" dir="ltr">
-            <input type="password" id="password" required placeholder="كلمة المرور" class="w-full p-3 border rounded-xl text-sm" dir="ltr">
-            <button type="submit" id="submit-btn" class="w-full bg-teal-600 text-white py-3 rounded-xl text-sm font-bold">تسجيل الدخول</button>
+        <div class="text-center space-y-2 pt-2">
+            <div class="flex flex-col items-center justify-center gap-2">
+                <div class="w-14 h-14 bg-linear-to-br from-teal-500 to-emerald-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-md shadow-teal-500/20">ع</div>
+                <span class="text-2xl font-black bg-linear-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent tracking-tight">عيادتي</span>
+            </div>
+            <p class="text-xs text-slate-400">نظام التحقق الذكي من الرتب وتوجيه الحسابات مركزيتًّاً</p>
+        </div>
+
+        <div id="alert-message" class="hidden text-xs font-semibold p-3.5 rounded-xl border transition-all duration-300"></div>
+
+        <form id="login-form" class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1.5">البريد الإلكتروني (Email)</label>
+                <input type="email" id="email" required class="w-full p-3 border border-slate-200 rounded-xl outline-none text-sm text-left" dir="ltr" placeholder="user@platform.com">
+            </div>
+            
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1.5">كلمة المرور (Password)</label>
+                <div class="relative flex items-center">
+                    <input type="password" id="password" required class="w-full p-3 pl-12 border border-slate-200 rounded-xl outline-none text-sm text-left" dir="ltr" placeholder="••••••••">
+                    <button type="button" id="toggle-password-btn" class="absolute left-3 text-slate-400 hover:text-slate-600 p-2 text-sm cursor-pointer select-none transition z-10 flex items-center justify-center">
+                        <svg id="eye-icon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between text-xs px-1">
+                <label class="flex items-center gap-2 text-slate-500 font-semibold cursor-pointer select-none">
+                    <input type="checkbox" id="remember-me" class="w-4 h-4 rounded-md border-slate-300 text-teal-600 focus:ring-teal-500">
+                    <span>تذكرني على هذا الجهاز</span>
+                </label>
+                <a href="./reset-password.html" class="text-teal-600 hover:underline font-semibold">نسيت كلمة المرور؟</a>
+            </div>
+
+            <button type="submit" id="submit-btn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded-xl text-xs shadow-xs transition flex items-center justify-center gap-2 cursor-pointer">
+                <span>🔑 تسجيل الدخول الآمن</span>
+            </button>
         </form>
     </div>
 
     <script>
-        // إعدادات الاتصال (يرجى التأكد من تطابقها مع لوحة تحكم سوبابيس)
+        // 2️⃣ إعداد متغيرات سوبابيس محلياً داخل الصفحة لضمان الاستقرار التام
         const SUPABASE_URL = "https://dpyshuhinqnxhaqfdykl.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweXNodWhpbnFueGhhcWZkeWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Mzc4ODQsImV4cCI6MjA5NjQxMzg4NH0.TpHanzVxjMEOJM0P3Oioic_odTmp7JJ-fFzBblOJVs0";
         
-        // تهيئة العميل
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // إنشاء اتصال نظيف ومباشر بالاعتماد على دالة سوبابيس العالمية
+        const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-        // فحص الاتصال
-        async function init() {
-            const statusDiv = document.getElementById('status');
+        const loginForm = document.getElementById('login-form');
+        const alertMessage = document.getElementById('alert-message');
+        const submitBtn = document.getElementById('submit-btn');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const togglePasswordBtn = document.getElementById('toggle-password-btn');
+        const eyeIcon = document.getElementById('eye-icon');
+        const rememberMeCheckbox = document.getElementById('remember-me');
+        const statusDot = document.getElementById('db-status-dot');
+        const statusText = document.getElementById('db-status-text');
+
+        // دالة فحص الربط المباشرة مع معالجة الأخطاء التفصيلية
+        async function testDatabaseConnection() {
             try {
-                const { data, error } = await supabase.from('user_roles').select('*').limit(1);
-                if (error) throw error;
-                statusDiv.innerText = "متصل بنجاح 🟢";
-                statusDiv.classList.add("text-emerald-600");
+                if (!supabase) {
+                    throw new Error("لم يتم تحميل مكتبة سوبابيس بشكل صحيح");
+                }
+                
+                const { error } = await supabase.from('user_roles').select('role').limit(1);
+                
+                if (error) {
+                    console.error("Supabase Error Details:", error);
+                    throw error;
+                }
+                
+                statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-xs shadow-emerald-500/50";
+                statusText.innerText = "متصل سحابياً 🟢";
+                statusText.className = "text-[10px] font-bold text-emerald-600";
             } catch (err) {
-                statusDiv.innerText = "خطأ في الاتصال 🔴";
-                statusDiv.classList.add("text-rose-600");
-                console.error(err);
+                console.error("Connection Catch Error:", err);
+                statusDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500 shadow-xs shadow-rose-500/50";
+                statusText.innerText = "خطأ في المفتاح/الاتصال 🔴";
+                statusText.className = "text-[10px] font-bold text-rose-600";
             }
         }
 
-        // معالجة الدخول
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
+        togglePasswordBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            const btn = document.getElementById('submit-btn');
-            btn.innerText = "جاري الدخول...";
-            
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: document.getElementById('email').value,
-                password: document.getElementById('password').value
-            });
-
-            if (error) {
-                alert("خطأ: " + error.message);
-                btn.innerText = "تسجيل الدخول";
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.822 7.822L21 21m-2.228-2.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88`;
             } else {
-                alert("تم الدخول بنجاح!");
-                window.location.reload();
+                passwordInput.type = 'password';
+                eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>`;
             }
         });
 
-        init();
+        function showAlert(message, type = 'error') {
+            alertMessage.innerText = message;
+            alertMessage.className = `text-xs font-semibold p-3.5 rounded-xl border ${type === 'error' ? 'bg-rose-50 text-rose-700 border-rose-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'}`;
+            alertMessage.classList.remove('hidden');
+        }
+
+        function loadSavedCredentials() {
+            const savedEmail = localStorage.getItem('remembered_clinic_email');
+            if (savedEmail) {
+                emailInput.value = savedEmail;
+                rememberMeCheckbox.checked = true;
+            }
+        }
+
+        async function redirectUserByRole(userId) {
+            submitBtn.disabled = true;
+            submitBtn.innerText = "🔄 جاري فحص الرتبة...";
+            const { data: userRole, error } = await supabase.from('user_roles').select('role').eq('user_id', userId).single();
+
+            if (error || !userRole) {
+                showAlert("⚠️ الحساب مسجل، لكنه بانتظار تفعيل وترخيص الإدارة السحابية.", "error");
+                await supabase.auth.signOut();
+                submitBtn.disabled = false;
+                submitBtn.innerText = "🔑 تسجيل الدخول الآمن";
+                return;
+            }
+
+            if (userRole.role === 'super_admin') {
+                window.location.href = "./admin-subscriptions.html";
+            } else {
+                window.location.href = "./dashboard.html";
+            }
+        }
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!supabase) return;
+            
+            submitBtn.disabled = true;
+            submitBtn.innerText = "⏳ جاري فحص الهوية...";
+            alertMessage.classList.add('hidden');
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                showAlert("⚠️ البريد الإلكتروني أو كلمة المرور غير صحيحة.", "error");
+                submitBtn.disabled = false;
+                submitBtn.innerText = "🔑 تسجيل الدخول الآمن";
+            } else {
+                if (rememberMeCheckbox.checked) {
+                    localStorage.setItem('remembered_clinic_email', email);
+                } else {
+                    localStorage.removeItem('remembered_clinic_email');
+                }
+                showAlert("🎉 تم التحقق بنجاح! جاري التوجيه...", "success");
+                redirectUserByRole(data.user.id);
+            }
+        });
+
+        loadSavedCredentials();
+        // تشغيل الفحص بعد نصف ثانية للتأكد من اكتمال قراءة الـ CDN
+        setTimeout(testDatabaseConnection, 500);
     </script>
 </body>
 </html>
