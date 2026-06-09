@@ -142,18 +142,17 @@
 
         checkExistingSession();
     </script>
-// دالة اختبار سريعة لتشخيص المشكلة
-async function testConnection() {
-    try {
-        const { data, error } = await supabase.from('user_roles').select('*').limit(1);
-        if (error) throw error;
-        console.log("✅ الاتصال سليم تماماً!");
-    } catch (err) {
-        console.error("❌ خطأ في الاتصال:", err.message);
-        // هذا السطر سيطبع لك السبب الحقيقي للخطأ في الـ Console (F12)
+<script>
+    async function testConnection() {
+        try {
+            const { data, error } = await supabase.from('user_roles').select('*').limit(1);
+            if (error) throw error;
+            console.log("✅ الاتصال سليم تماماً!");
+        } catch (err) {
+            console.error("❌ خطأ في الاتصال:", err.message);
+        }
     }
-}
-testConnection();
- </script>
+    testConnection();
+</script>
 </body>
 </html>
