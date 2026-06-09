@@ -1,34 +1,16 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <title>منصة عيادتي</title>
-    <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-</head>
-<body>
-    <h1>لوحة تحكم بيانات العيادة</h1>
-    <div id="data-container">جاري التحميل...</div>
-
-    <script src="supabase-config.js"></script>
-
-    <script>
-        window.onload = async function() {
-            const container = document.getElementById('data-container');
-            
-            // التأكد من وجود المتغير قبل استخدامه
-            if (typeof window.supabase === 'undefined') {
-                container.innerHTML = "خطأ: لم يتم تحميل سوبابيس بشكل صحيح";
-                return;
-            }
-
-            try {
-                const { data, error } = await window.supabase.from('user_roles').select('*');
-                if (error) throw error;
-                container.innerHTML = "✅ تم الاتصال بنجاح! عدد السجلات: " + data.length;
-            } catch (err) {
-                container.innerHTML = "❌ خطأ في الاتصال: " + err.message;
-            }
-        };
-    </script>
-</body>
-</html>
+<script>
+    // استبدل كود عرض الرقم بهذا الكود
+    async function fetchData() {
+        const { data, error } = await window.supabase.from('user_roles').select('*');
+        if (data) {
+            let table = `<table border="1" style="width:100%; text-align:center;">
+                            <tr><th>ID</th><th>الدور (Role)</th></tr>`;
+            data.forEach(row => {
+                table += `<tr><td>${row.id}</td><td>${row.role_name}</td></tr>`;
+            });
+            table += `</table>`;
+            document.getElementById('data-container').innerHTML = table;
+        }
+    }
+    fetchData();
+</script>
