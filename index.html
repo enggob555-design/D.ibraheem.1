@@ -55,15 +55,33 @@
 
     // دالة التوجيه (نُفعلها الآن)
     async function redirectUserByRole(userId) {
-        submitBtn.disabled = true;
-        submitBtn.innerText = "🔄 جاري التوجيه...";
-        const { data: userRole, error } = await supabase.from('user_roles').select('role').eq('user_id', userId).single();
-        if (error || !userRole) {
+    submitBtn.disabled = true;
+    submitBtn.innerText = "🔄 جاري التوجيه...";
+
+    // جلب الرتبة من جدول user_roles
+    const { data: userRole, error } = await supabase.from('user_roles').select('role').eq('user_id', userId).single();
+
+    if (error || !userRole) {
+        // إذا لم يجد رتبة، هل هو طبيب في جدول العيادات؟
+        const { data: isDoc } = await supabase.from('clinics').select('id').eq('id', userId).single();
+        if(isDoc) {
             window.location.href = "./dashboard.html";
-            return;
+        } else {
+            showAlert("⚠️ حسابك غير مصنف في النظام. تواصل مع الدعم.", "error");
+            submitBtn.disabled = false;
+            submitBtn.innerText = "🔑 تسجيل الدخول والنظام";
         }
-        window.location.href = (userRole.role === 'doctor' || userRole.role === 'secretary') ? "./dashboard.html" : "./admin-ads.html";
+        return;
     }
+
+    // المنطق الجديد: التحويل بناءً على الرتبة الصريحة
+    if (userRole.role === 'super_admin' || userRole.role === 'ads_agent' || userRole.role === 'assistant_admin') {
+        window.location.href = "./admin-ads.html";
+    } else {
+        window.location.href = "./dashboard.html";
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
