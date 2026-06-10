@@ -47,7 +47,70 @@
             </button>
         </form>
 
-     
+     <script>
+    // 1. منطق تسجيل الدخول
+    const loginForm = document.getElementById('login-form');
+    const alertMessage = document.getElementById('alert-message');
+    const submitBtn = document.getElementById('submit-btn');
+
+    // دالة التوجيه (نُفعلها الآن)
+    async function redirectUserByRole(userId) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = "🔄 جاري التوجيه...";
+        const { data: userRole, error } = await supabase.from('user_roles').select('role').eq('user_id', userId).single();
+        if (error || !userRole) {
+            window.location.href = "./dashboard.html";
+            return;
+        }
+        window.location.href = (userRole.role === 'doctor' || userRole.role === 'secretary') ? "./dashboard.html" : "./admin-ads.html";
+    }
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: document.getElementById('email').value.trim(),
+            password: document.getElementById('password').value
+        });
+        if (error) {
+            alertMessage.innerText = "⚠️ " + error.message;
+            alertMessage.classList.remove('hidden', 'bg-emerald-50', 'text-emerald-700', 'border-emerald-100');
+            alertMessage.classList.add('bg-rose-50', 'text-rose-700', 'border-rose-100');
+        } else {
+            redirectUserByRole(data.user.id);
+        }
+    });
+
+    // 2. مؤشر الاتصال الموحد
+    async function checkConnection() {
+        const dot = document.getElementById('conn-dot');
+        const text = document.getElementById('conn-text');
+        try {
+            const { error } = await supabase.from('user_roles').select('id').limit(1);
+            if (error) throw error;
+            dot.className = "w-2 h-2 rounded-full bg-emerald-500";
+            text.innerText = "متصل سحابياً";
+        } catch (err) {
+            dot.className = "w-2 h-2 rounded-full bg-rose-500";
+            text.innerText = "فشل الاتصال";
+        }
+    }
+    window.addEventListener('load', checkConnection);
+
+    // 3. منطق أيقونة العين
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordField = document.getElementById('password');
+    const eyePath = document.getElementById('eye-path');
+    togglePassword.addEventListener('click', () => {
+        const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordField.setAttribute('type', type);
+    });
+</script>
+
+<div id="conn-indicator" class="fixed top-4 left-4 flex items-center gap-2 bg-white px-2 py-1 rounded-full shadow-sm border border-slate-100 z-50">
+    <div id="conn-dot" class="w-2 h-2 rounded-full bg-slate-300"></div>
+    <span id="conn-text" class="text-[9px] font-bold text-slate-400">جاري الاتصال...</span>
+</div>
+
  
 </body>
 </html>
