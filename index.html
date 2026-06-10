@@ -64,7 +64,7 @@
         }
         window.location.href = (userRole.role === 'doctor' || userRole.role === 'secretary') ? "./dashboard.html" : "./admin-ads.html";
     }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const { data, error } = await supabase.auth.signInWithPassword({
