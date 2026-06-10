@@ -146,28 +146,42 @@
                 redirectUserByRole(data.user.id);
             }
         });
-
-        checkExistingSession();
-    </script><script>
-    async function testConnection() {
-        const dot = document.getElementById('conn-dot');
-        const text = document.getElementById('conn-text');
-        try {
-            // اختبار الاتصال بجدول الرتب
-            const { error } = await supabase.from('user_roles').select('id').limit(1);
-            if (error) throw error;
+//////
+async function testDatabaseConnection() {
+            try {
+                const { error } = await supabase.from('user_roles').select('role').limit(1);
+                if (error && error.message.includes("apiKey")) throw new Error();
+                statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-xs shadow-emerald-500/50";
+                statusText.innerText = "متصل سحابياً 🟢";
+                statusText.className = "text-[10px] font-bold text-emerald-600";
+            } catch (err) {
+                statusDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500 shadow-xs shadow-rose-500/50";
+                statusText.innerText = "خطأ في المفتاح/الاتصال 🔴";
+                statusText.className = "text-[10px] font-bold text-rose-600";
+            }
+        }
+        
+     //   checkExistingSession();
+ //   </script><script>
+   // async function testConnection() {
+   //     const dot = document.getElementById('conn-dot');
+   //     const text = document.getElementById('conn-text');
+   //     try {
+   //         // اختبار الاتصال بجدول الرتب
+   //         const { error } = await supabase.from('user_roles').select('id').limit(1);
+   //         if (error) throw error;
             
             // نجاح الاتصال
-            dot.className = "w-2 h-2 rounded-full bg-emerald-500";
-            text.innerText = "متصل";
-            console.log("✅ الاتصال سليم تماماً!");
-        } catch (err) {
+       //     dot.className = "w-2 h-2 rounded-full bg-emerald-500";
+       //     text.innerText = "متصل";
+      //      console.log("✅ الاتصال سليم تماماً!");
+       // } catch (err) {
             // فشل الاتصال
-            dot.className = "w-2 h-2 rounded-full bg-rose-500";
-            text.innerText = "فشل";
-            console.error("❌ خطأ في الاتصال:", err.message);
-        }
-    }
+        //    dot.className = "w-2 h-2 rounded-full bg-rose-500";
+        //    text.innerText = "فشل";
+        //    console.error("❌ خطأ في الاتصال:", err.message);
+    //    }
+  //  }
     
     // تشغيل الاختبار عند تحميل الصفحة
     window.addEventListener('load', testConnection);
