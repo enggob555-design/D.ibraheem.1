@@ -1,110 +1,769 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>عيادتي - بوابة الدخول</title>
+    <title>Clinic Management System - Login</title>
+    <!-- Tailwind CSS v3 via CDN / استخدام مكتبة Tailwind CSS عبر رابط CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="supabase-config.js"></script>
-     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght=300;400;600;750&display=swap');
-        body { font-family: 'Cairo', sans-serif; }
+    <!-- Supabase JS Client library via CDN / تضمين مكتبة Supabase عبر CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Tailwind configuration for custom themes and fonts / إعدادات Tailwind لتخصيص الألوان والخطوط
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Tajawal', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#10b981', // Emerald green representing health / اللون الأخضر الزمردي الممثل للصحة
+                            600: '#059669',
+                            700: '#047857',
+                            900: '#064e3b',
+                        },
+                        accent: {
+                            500: '#0ea5e9', // Sky blue for clinical look / اللون الأزرق السماوي للمظهر الطبي
+                            600: '#0284c7',
+                        }
+                    },
+                    boxShadow: {
+                        'glow': '0 0 15px -3px rgba(16, 185, 129, 0.2), 0 4px 6px -2px rgba(16, 185, 129, 0.1)',
+                        'glow-dark': '0 0 20px 2px rgba(16, 185, 129, 0.15)',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts & Custom CSS / تحميل الخطوط وتنسيقات CSS مخصصة -->
+    <style type="text/tailwindcss">
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Tajawal:wght@300;400;500;700;800&display=swap');
+        
+        /* Apply font family dynamically based on document direction / تطبيق الخطوط ديناميكياً بناءً على اتجاه الصفحة */
+        html[dir="rtl"] {
+            font-family: 'Tajawal', sans-serif;
+        }
+        html[dir="ltr"] {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Glassmorphism gradient background animation / تأثير خلفية زجاجية متحركة */
+        .ambient-blob {
+            filter: blur(80px);
+            opacity: 0.15;
+            transition: all 0.5s ease-in-out;
+        }
+        .dark .ambient-blob {
+            opacity: 0.08;
+        }
     </style>
 </head>
-    <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex items-center justify-center p-4">
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col justify-between transition-colors duration-300 relative overflow-x-hidden">
+    
+    <!-- Ambient Background Blobs / خلفيات ضوئية جمالية -->
+    <div class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-brand-500 ambient-blob pointer-events-none"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-accent-500 ambient-blob pointer-events-none"></div>
 
-    <div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl border border-slate-100 space-y-6 relative overflow-hidden">
-        <body class="bg-slate-50 flex items-center justify-center min-h-screen p-4">///////
-
-    <div class="fixed top-4 right-4 flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow-md border">
-        <div id="status-light" class="w-3 h-3 rounded-full bg-yellow-500"></div>
-        <span id="status-text" class="text-[10px] font-bold text-slate-600">جاري التحقق...</span>
-    </div>
-
- <div class="text-center space-y-2 pt-2">
-            <div class="flex flex-col items-center justify-center gap-2">
-                <div class="w-14 h-14 bg-linear-to-br from-teal-500 to-emerald-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-md shadow-teal-500/20">ع</div>
-                <span class="text-2xl font-black bg-linear-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent tracking-tight">عيادتي</span>
-          <p class="text-slate-400 text-sm">نظام إدارة العيادات الذكي</p>
+    <!-- Header / ترويسة الصفحة (شريط التحكم) -->
+    <header class="w-full max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex items-center justify-between z-10 relative">
+        <!-- Brand Logo & Title / شعار واسم النظام -->
+        <div class="flex items-center space-x-3 rtl:space-x-reverse">
+            <!-- Medical Cross SVG Logo with subtle rotation animation / شعار الصليب الطبي مع حركة دوران خفيفة -->
+            <div class="bg-brand-500 dark:bg-brand-600 p-2 rounded-xl text-white shadow-lg shadow-brand-500/20 hover:rotate-12 transition-transform duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 10.5V20a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-9.5M12 4v16m-8-8h16" />
+                </svg>
             </div>
-            <form id="login-form" class="space-y-4">
-            <div>
-                <label class="text-xs font-bold text-slate-500">البريد الإلكتروني</label>
-                <input type="email" id="email" required class="w-full p-3 mt-1 border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+            <span class="font-bold text-lg hidden sm:inline tracking-tight text-slate-800 dark:text-slate-200" data-translate="brandName">ClinicManager</span>
+        </div>
+
+        <!-- Controls (Status, Language, Theme) / عناصر التحكم (الحالة، اللغة، الوضع المظلم) -->
+        <div class="flex items-center space-x-3 sm:space-x-6 rtl:space-x-reverse">
+            
+            <!-- Connection Status Indicator / مؤشر حالة الاتصال بالشبكة -->
+            <div id="connection-status" class="flex items-center space-x-2 rtl:space-x-reverse bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 px-3 py-1.5 rounded-full shadow-sm">
+                <!-- Glowing Pulsating Light / ضوء متوهج ينبض -->
+                <span class="relative flex h-2.5 w-2.5">
+                    <span id="status-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span id="status-dot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                </span>
+                <span class="text-xs font-medium text-slate-600 dark:text-slate-400 hidden xs:inline" data-translate="connectionStatus">Connection Status</span>
+                <span id="status-text" class="text-xs font-semibold text-emerald-600 dark:text-emerald-400" data-translate="statusOnline">Online</span>
             </div>
 
-            <div class="relative">
-                <label class="text-xs font-bold text-slate-500">كلمة المرور</label>
-                <input type="password" id="password" required class="w-full p-3 mt-1 border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
-                <button type="button" onclick="togglePassword()" class="absolute left-3 top-9 text-slate-400 text-xs font-bold">عرض</button>
+            <!-- Language Switcher Button / زر تبديل اللغة -->
+            <button id="lang-toggle" class="flex items-center space-x-1 rtl:space-x-reverse bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition duration-200 shadow-sm text-sm font-semibold text-slate-700 dark:text-slate-300">
+                <!-- Globe Icon / أيقونة الكرة الأرضية -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                </svg>
+                <span id="lang-text">العربية</span>
+            </button>
+
+            <!-- Dark Mode Toggle Button / زر تشغيل وإيقاف الوضع المظلم -->
+            <button id="theme-toggle" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition duration-200 shadow-sm text-slate-700 dark:text-slate-300" aria-label="Toggle Theme">
+                <!-- Sun Icon / أيقونة الشمس (تظهر في الوضع المظلم) -->
+                <svg id="theme-sun" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m2.828-9.9a5 5 0 117.072 0l-7.072 7.072z" />
+                </svg>
+                <!-- Moon Icon / أيقونة الهلال (تظهر في الوضع المضيء) -->
+                <svg id="theme-moon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content - Centered Login Card / المحتوى الرئيسي - بطاقة تسجيل الدخول في المنتصف -->
+    <main class="flex-grow flex items-center justify-center px-4 py-8 z-10">
+        <div class="w-full max-w-md bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-800/80 rounded-3xl p-8 sm:p-10 shadow-xl dark:shadow-glow-dark transition-all duration-300 relative">
+            
+            <!-- Glow Border Decor / إطار مضيء جمالي للبطاقة -->
+            <div class="absolute inset-0 rounded-3xl border border-transparent dark:border-brand-500/10 pointer-events-none"></div>
+            
+            <!-- Header Text inside Card / العناوين داخل البطاقة -->
+            <div class="text-center mb-8">
+                <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white tracking-tight" data-translate="loginTitle">Clinic Management System</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-2" data-translate="loginSubtitle">Welcome back! Please enter your credentials</p>
             </div>
 
-            <button type="submit" id="submit-btn" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition">تسجيل الدخول</button>
-        </form>
+            <!-- Login Form / نموذج تسجيل الدخول -->
+            <form id="login-form" class="space-y-6" novalidate>
+                
+                <!-- Email Address Field / حقل البريد الإلكتروني -->
+                <div class="space-y-2">
+                    <label for="email" class="text-sm font-semibold text-slate-700 dark:text-slate-300 block" data-translate="emailLabel">Email Address</label>
+                    <div class="relative">
+                        <!-- Envelope Icon / أيقونة الظرف للبريد -->
+                        <span class="absolute inset-y-0 start-0 flex items-center ps-4 text-slate-400 pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206" />
+                            </svg>
+                        </span>
+                        <input type="email" id="email" required
+                            class="w-full bg-slate-50/50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-2xl ps-12 pe-4 py-3.5 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 dark:focus:ring-brand-500/20 transition-all" 
+                            placeholder="doctor@clinic.com"
+                            data-translate-placeholder="emailPlaceholder">
+                    </div>
+                    <!-- Email Error Message / رسالة خطأ البريد الإلكتروني -->
+                    <p id="email-error" class="text-xs text-rose-500 mt-1 hidden"></p>
+                </div>
 
-        <div class="mt-6 text-center text-xs space-y-2 text-slate-500">
-            <p>لا تملك حساباً؟ <a href="register.html" class="text-blue-600 font-bold">إنشاء عيادة جديدة</a></p>
-            <p>نسيت كلمة المرور؟ <a href="reset-password.html" class="text-blue-600 font-bold">استعادة الوصول</a></p>
+                <!-- Password Field / حقل كلمة المرور -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label for="password" class="text-sm font-semibold text-slate-700 dark:text-slate-300" data-translate="passwordLabel">Password</label>
+                    </div>
+                    <div class="relative">
+                        <!-- Lock Icon / أيقونة القفل لكلمة المرور -->
+                        <span class="absolute inset-y-0 start-0 flex items-center ps-4 text-slate-400 pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </span>
+                        <input type="password" id="password" required
+                            class="w-full bg-slate-50/50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-2xl ps-12 pe-12 py-3.5 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 dark:focus:ring-brand-500/20 transition-all" 
+                            placeholder="••••••••"
+                            data-translate-placeholder="passwordPlaceholder">
+                        
+                        <!-- Show/Hide Toggle Button / زر إظهار وإخفاء كلمة المرور -->
+                        <button type="button" id="password-toggle" class="absolute inset-y-0 end-0 flex items-center pe-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none" aria-label="Toggle Password Visibility">
+                            <!-- Eye Icon / أيقونة العين -->
+                            <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            <!-- Eye Off Icon / أيقونة شطب العين -->
+                            <svg id="eye-off-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                            </svg>
+                        </button>
+                    </div>
+                    <!-- Password Error Message / رسالة خطأ كلمة المرور -->
+                    <p id="password-error" class="text-xs text-rose-500 mt-1 hidden"></p>
+                </div>
+
+                <!-- Submit Button / زر تسجيل الدخول -->
+                <button type="submit" id="submit-btn" class="w-full bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white font-semibold py-3.5 rounded-2xl shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 transition-all duration-200 flex items-center justify-center space-x-2 rtl:space-x-reverse relative overflow-hidden group">
+                    <span id="submit-text" class="relative z-10 transition-transform duration-200" data-translate="loginButton">Sign In</span>
+                    <!-- Loading Spinner / مؤشر التحميل والدوران -->
+                    <svg id="submit-spinner" class="animate-spin h-5 w-5 text-white hidden relative z-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </form>
+
+            <!-- Navigation Links / روابط المساعدة والتنقل -->
+            <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800/80 flex flex-col space-y-3 text-center text-sm font-medium">
+                <a href="reset-password.html" class="text-slate-500 dark:text-slate-400 hover:text-brand-500 dark:hover:text-brand-400 transition" data-translate="forgotPassword">Reset Password</a>
+                <div class="text-slate-300 dark:text-slate-700 h-px w-1/4 mx-auto"></div>
+                <a href="register.html" class="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 hover:underline transition" data-translate="registerLink">Create New Clinic/Account</a>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer / أسفل الصفحة -->
+    <footer class="w-full text-center py-6 text-xs text-slate-400 dark:text-slate-600 z-10 relative">
+        <p id="copyright-text" data-translate="copyright">© 2026 Clinic Management System. All rights reserved.</p>
+    </footer>
+
+    <!-- Toast Notification / نافذة التنبيه المنبثقة -->
+    <div id="toast" class="fixed bottom-6 start-6 end-6 sm:start-auto sm:end-6 max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 shadow-xl translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-start space-x-3 rtl:space-x-reverse pointer-events-none">
+        <div id="toast-icon-wrapper" class="p-1.5 rounded-lg text-white">
+            <!-- Dynamic Icon inserted here by JS / يتم إدخال الأيقونة ديناميكياً هنا -->
+        </div>
+        <div class="flex-grow">
+            <h4 id="toast-title" class="text-sm font-bold text-slate-800 dark:text-slate-200"></h4>
+            <p id="toast-message" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5"></p>
         </div>
     </div>
 
-    <script>
-        // 1. دالة تبديل رؤية كلمة المرور
-        function togglePassword() {
-            const field = document.getElementById('password');
-            field.type = field.type === 'password' ? 'text' : 'password';
-        }
+    <!-- Code Preview Modal for Education / نافذة استعراض كود الاتصال بـ Supabase للتعلم -->
+    <div id="code-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl transform scale-95 transition-transform duration-300">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
+                    <span class="p-1.5 bg-brand-500/10 text-brand-500 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                        </svg>
+                    </span>
+                    <span data-translate="modalTitle">Supabase Auth Execution</span>
+                </h3>
+                <button id="close-modal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-4" data-translate="modalDescription">
+                Below is the standard integration snippet being run behind this mockup to authenticate with Supabase:
+            </p>
 
-        // 2. تحديث مصباح الاتصال
-        function updateOnlineStatus() {
-            const light = document.getElementById('status-light');
-            const text = document.getElementById('status-text');
-            if (navigator.onLine) {
-                light.className = "w-3 h-3 rounded-full bg-green-500";
-                text.innerText = "متصل";
-            } else {
-                light.className = "w-3 h-3 rounded-full bg-red-500";
-                text.innerText = "غير متصل";
+            <div class="bg-slate-950 text-slate-300 rounded-2xl p-4 text-xs font-mono overflow-x-auto border border-slate-800 text-left" dir="ltr">
+                <span class="text-teal-400">// 1. Initialize Supabase / تهيئة مكتبة Supabase</span><br>
+                <span class="text-purple-400">import</span> { createClient } <span class="text-purple-400">from</span> <span class="text-amber-400">'@supabase/supabase-js'</span>;<br>
+                <span class="text-purple-400">const</span> supabase = createClient(<span class="text-amber-400">SUPABASE_URL</span>, <span class="text-amber-400">SUPABASE_ANON_KEY</span>);<br><br>
+                
+                <span class="text-teal-400">// 2. Attempt Authentication / محاولة التحقق وتسجيل الدخول</span><br>
+                <span class="text-purple-400">const</span> { data, error } = <span class="text-purple-400">await</span> supabase.auth.signInWithPassword({<br>
+                &nbsp;&nbsp;email: <span class="text-sky-400">emailInput</span>.value,<br>
+                &nbsp;&nbsp;password: <span class="text-sky-400">passwordInput</span>.value<br>
+                });<br><br>
+
+                <span class="text-teal-400">// 3. Handle Result & Metadata Redirection / معالجة النتيجة والتوجيه حسب الدور</span><br>
+                <span class="text-purple-400">if</span> (error) {<br>
+                &nbsp;&nbsp;console.error(error.message);<br>
+                } <span class="text-purple-400">else</span> {<br>
+                &nbsp;&nbsp;<span class="text-teal-400">// Read user custom role from Supabase metadata</span><br>
+                &nbsp;&nbsp;<span class="text-purple-400">const</span> role = data.user.user_metadata.role || <span class="text-amber-400">'doctor'</span>;<br>
+                &nbsp;&nbsp;window.location.href = <span class="text-amber-400">`/${role}/dashboard`</span>;<br>
+                }
+            </div>
+            
+            <div class="mt-6 flex justify-end">
+                <button id="modal-proceed" class="bg-brand-500 hover:bg-brand-600 text-white font-semibold px-6 py-2.5 rounded-xl shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 transition text-sm" data-translate="modalConfirm">
+                    Got it, proceed
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Controller / المحرك والبرمجيات التفاعلية -->
+    <script>
+        // ==========================================
+        // 0. SUPABASE DATABASE INITIALIZATION / تهيئة وربط قاعدة بيانات Supabase
+        // ==========================================
+        const SUPABASE_URL = "https://dpyshuhinqnxhaqfdykl.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweXNodWhpbnFueGhhcWZkeWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Mzc4ODQsImV4cCI6MjA5NjQxMzg4NH0.TpHanzVxjMEOJM0P3Oioic_odTmp7JJ-fFzBblOJVs0"; // Replace with your actual anon key / استبدل هذا بالمفتاح الفعلي الخاص بك
+
+        let supabaseClient = null;
+        if (SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY" && SUPABASE_ANON_KEY.trim() !== "") {
+            try {
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log("[Supabase Client] Successfully initialized / تم ربط العميل بنجاح");
+            } catch (err) {
+                console.error("[Supabase Client] Initialization failed / فشل الاتصال:", err);
             }
         }
-        window.addEventListener('online', updateOnlineStatus);
-        window.addEventListener('offline', updateOnlineStatus);
-        updateOnlineStatus();
 
-        // 3. المنطق البرمجي لتسجيل الدخول والتوجيه حسب الرتبة
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault(); // منع المتصفح من إعادة تحميل الصفحة عند إرسال النموذج
-            const email = document.getElementById('email').value; // جلب الإيميل المدخل
-            const password = document.getElementById('password').value; // جلب الباسورد المدخل
-            const btn = document.getElementById('submit-btn');
+        // ==========================================
+        // 1. DICTIONARY TRANSLATIONS / مصفوفة الترجمة اللغوية
+        // ==========================================
+        const translations = {
+            en: {
+                brandName: "ClinicManager",
+                connectionStatus: "Connection Status:",
+                statusOnline: "Online",
+                statusOffline: "Offline",
+                langToggleText: "العربية",
+                loginTitle: "Clinic Management System",
+                loginSubtitle: "Welcome back! Please enter your credentials",
+                emailLabel: "Email Address",
+                emailPlaceholder: "doctor@clinic.com",
+                passwordLabel: "Password",
+                passwordPlaceholder: "Enter your password",
+                loginButton: "Sign In",
+                loggingIn: "Signing in...",
+                forgotPassword: "Reset Password",
+                registerLink: "Create New Clinic/Account",
+                copyright: "© 2026 Clinic Management System. All rights reserved.",
+                
+                // Form Validations / التحقق من صحة المدخلات
+                errInvalidEmail: "Please enter a valid email address.",
+                errShortPassword: "Password must be at least 6 characters.",
+                
+                // Toast notifications / إشعارات التنبيه
+                toastSuccessTitle: "Authentication Successful",
+                toastSuccessMsg: "Login succeeded as: ",
+                toastErrorTitle: "Authentication Failed",
+                toastErrorMsg: "Check credentials (use any valid email, password >= 6 chars).",
+                toastOfflineTitle: "No Connection",
+                toastOfflineMsg: "Please check your network settings and try again.",
+
+                // Roles / أدوار المستخدمين
+                roleAdmin: "Admin",
+                roleDoctor: "Doctor",
+                roleReceptionist: "Receptionist",
+
+                // Educational Modal / نافذة محاكاة الكود التوضيحية
+                modalTitle: "Supabase Auth Execution",
+                modalDescription: "Below is the standard integration snippet being run behind this mockup to authenticate with Supabase:",
+                modalConfirm: "Got it, proceed"
+            },
+            ar: {
+                brandName: "مدير العيادة",
+                connectionStatus: "حالة الاتصال:",
+                statusOnline: "متصل",
+                statusOffline: "غير متصل",
+                langToggleText: "English",
+                loginTitle: "نظام إدارة العيادات",
+                loginSubtitle: "مرحباً بك مجدداً! يرجى إدخال بيانات الاعتماد الخاصة بك",
+                emailLabel: "البريد الإلكتروني",
+                emailPlaceholder: "doctor@clinic.com",
+                passwordLabel: "كلمة المرور",
+                passwordPlaceholder: "أدخل كلمة المرور الخاصة بك",
+                loginButton: "تسجيل الدخول",
+                loggingIn: "جاري تسجيل الدخول...",
+                forgotPassword: "إعادة تعيين كلمة المرور",
+                registerLink: "إنشاء حساب عيادة جديد / حساب جديد",
+                copyright: "© 2026 نظام إدارة العيادات. جميع الحقوق محفوظة.",
+                
+                // Form Validations / التحقق من صحة المدخلات
+                errInvalidEmail: "يرجى إدخال بريد إلكتروني صالح.",
+                errShortPassword: "يجب أن تكون كلمة المرور 6 أحرف على الأقل.",
+                
+                // Toast notifications / إشعارات التنبيه
+                toastSuccessTitle: "تم التحقق بنجاح",
+                toastSuccessMsg: "نجح تسجيل الدخول بصفتك: ",
+                toastErrorTitle: "فشل التحقق",
+                toastErrorMsg: "تحقق من المدخلات (استخدم بريداً صالحاً وكلمة مرور لا تقل عن 6 أحرف).",
+                toastOfflineTitle: "لا يوجد اتصال",
+                toastOfflineMsg: "يرجى التحقق من اتصال الشبكة والمحاولة مرة أخرى.",
+
+                // Roles / أدوار المستخدمين
+                roleAdmin: "مدير النظام",
+                roleDoctor: "طبيب",
+                roleReceptionist: "موظف استقبال",
+
+                // Educational Modal / نافذة محاكاة الكود التوضيحية
+                modalTitle: "تنفيذ مصادقة Supabase",
+                modalDescription: "أدناه نموذج الكود البرمجي الفعلي الذي يتم تنفيذه خلف الكواليس للاتصال بـ Supabase:",
+                modalConfirm: "فهمت ذلك، تابع"
+            }
+        };
+
+        // ==========================================
+        // 2. DOM ELEMENT SELECTORS / محددات عناصر وثيقة HTML
+        // ==========================================
+        const htmlElement = document.documentElement;
+        const langToggleBtn = document.getElementById('lang-toggle');
+        const langText = document.getElementById('lang-text');
+        
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeSunIcon = document.getElementById('theme-sun');
+        const themeMoonIcon = document.getElementById('theme-moon');
+
+        const connectionStatusCard = document.getElementById('connection-status');
+        const statusPing = document.getElementById('status-ping');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+
+        const loginForm = document.getElementById('login-form');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const emailError = document.getElementById('email-error');
+        const passwordError = document.getElementById('password-error');
+
+        const passwordToggleBtn = document.getElementById('password-toggle');
+        const eyeIcon = document.getElementById('eye-icon');
+        const eyeOffIcon = document.getElementById('eye-off-icon');
+
+        const submitBtn = document.getElementById('submit-btn');
+        const submitText = document.getElementById('submit-text');
+        const submitSpinner = document.getElementById('submit-spinner');
+
+        const toast = document.getElementById('toast');
+        const toastIconWrapper = document.getElementById('toast-icon-wrapper');
+        const toastTitle = document.getElementById('toast-title');
+        const toastMessage = document.getElementById('toast-message');
+
+        const codeModal = document.getElementById('code-modal');
+        const modalContent = codeModal.querySelector('div');
+        const closeModalBtn = document.getElementById('close-modal');
+        const modalProceedBtn = document.getElementById('modal-proceed');
+
+        // ==========================================
+        // 3. STATE INITIALIZATION / تهيئة المتغيرات وحالة النظام
+        // ==========================================
+        // Load language preference (defaults to Arabic 'ar' or English 'en' based on system settings)
+        // تحميل إعدادات اللغة المفضلة (الافتراضي هو العربية نظراً لبيئة عمل التطبيق)
+        let currentLang = localStorage.getItem('lang') || 'ar';
+        
+        // Load theme preference (defaults to light mode)
+        // تحميل إعدادات السمة المفضلة (مضيء/مظلم)
+        let isDarkMode = localStorage.getItem('theme') === 'dark' || 
+            (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+        // Apply initial configurations / تطبيق الإعدادات الأولية
+        applyLanguage(currentLang);
+        applyTheme(isDarkMode);
+        checkNetworkStatus();
+
+        // ==========================================
+        // 4. THEME CONTROLLER FUNCTIONS / إدارة وتغيير الوضع المظلم والمضيء
+        // ==========================================
+        function applyTheme(dark) {
+            if (dark) {
+                htmlElement.classList.add('dark');
+                themeSunIcon.classList.remove('hidden');
+                themeMoonIcon.classList.add('hidden');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                htmlElement.classList.remove('dark');
+                themeSunIcon.classList.add('hidden');
+                themeMoonIcon.classList.remove('hidden');
+                localStorage.setItem('theme', 'light');
+            }
+            isDarkMode = dark;
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            // Toggle theme and update layout / تبديل السمة وتحديث العناصر
+            applyTheme(!isDarkMode);
+        });
+
+        // ==========================================
+        // 5. BILINGUAL TRANSLATION CONTROLLER / إدارة الترجمة اللغوية واتجاهات النصوص
+        // ==========================================
+        function applyLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('lang', lang);
+
+            // Toggle HTML tag direction and language attribute / تبديل الاتجاه ولغة وسم HTML
+            if (lang === 'ar') {
+                htmlElement.setAttribute('dir', 'rtl');
+                htmlElement.setAttribute('lang', 'ar');
+                langText.textContent = 'English';
+            } else {
+                htmlElement.setAttribute('dir', 'ltr');
+                htmlElement.setAttribute('lang', 'en');
+                langText.textContent = 'العربية';
+            }
+
+            // Loop and translate all elements with data-translate attribute
+            // المرور على كافة العناصر التي تحتوي على خاصية الترجمة وتحديث محتواها النصي
+            document.querySelectorAll('[data-translate]').forEach(el => {
+                const key = el.getAttribute('data-translate');
+                if (translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+
+            // Loop and translate all placeholders
+            // المرور على الحقول لتحديث النصوص التلميحية (Placeholders)
+            document.querySelectorAll('[data-translate-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-translate-placeholder');
+                if (translations[lang][key]) {
+                    el.setAttribute('placeholder', translations[lang][key]);
+                }
+            });
+
+            // Recheck current network status text because language changed
+            // تحديث نص مؤشر حالة الاتصال بناءً على تغيير اللغة الحالي
+            updateStatusText(navigator.onLine);
+        }
+
+        langToggleBtn.addEventListener('click', () => {
+            // Switch language back and forth / التبديل بين اللغتين
+            applyLanguage(currentLang === 'en' ? 'ar' : 'en');
+        });
+
+        // ==========================================
+        // 6. PASSWORD VISIBILITY TOGGLE / تبديل ظهور وإخفاء كلمة المرور
+        // ==========================================
+        passwordToggleBtn.addEventListener('click', () => {
+            const isPassword = passwordInput.getAttribute('type') === 'password';
             
-            btn.innerText = "جاري التحقق...";
-            btn.disabled = true;
+            if (isPassword) {
+                // Change input type to text / تغيير نوع الإدخال إلى نص عادي
+                passwordInput.setAttribute('type', 'text');
+                eyeIcon.classList.add('hidden');
+                eyeOffIcon.classList.remove('hidden');
+            } else {
+                // Change input type back to password / إعادة نوع الإدخال إلى كلمة مرور
+                passwordInput.setAttribute('type', 'password');
+                eyeIcon.classList.remove('hidden');
+                eyeOffIcon.classList.add('hidden');
+            }
+        });
 
-            // محاولة تسجيل الدخول عبر Supabase
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        // ==========================================
+        // 7. NETWORK CONNECTION MONITOR / مراقبة حالة اتصال شبكة الإنترنت
+        // ==========================================
+        function updateStatusText(isOnline) {
+            if (isOnline) {
+                statusPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75";
+                statusDot.className = "relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500";
+                statusText.className = "text-xs font-semibold text-emerald-600 dark:text-emerald-400";
+                statusText.textContent = translations[currentLang].statusOnline;
+            } else {
+                statusPing.className = "absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-0"; // No pulse when offline / لا يوجد نبض عند انقطاع الشبكة
+                statusDot.className = "relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500 animate-pulse";
+                statusText.className = "text-xs font-semibold text-rose-600 dark:text-rose-400";
+                statusText.textContent = translations[currentLang].statusOffline;
+            }
+        }
 
-            if (error) {
-                alert("خطأ: " + error.message);
-                btn.innerText = "تسجيل الدخول";
-                btn.disabled = false;
+        function checkNetworkStatus() {
+            updateStatusText(navigator.onLine);
+        }
+
+        // Add event listeners for network changes / إضافة مستمعين لأحداث الاتصال بالإنترنت
+        window.addEventListener('online', () => {
+            updateStatusText(true);
+            showToast(
+                translations[currentLang].statusOnline,
+                currentLang === 'ar' ? "تمت إعادة الاتصال بالإنترنت بنجاح." : "Internet connection re-established.",
+                'success'
+            );
+        });
+
+        window.addEventListener('offline', () => {
+            updateStatusText(false);
+            showToast(
+                translations[currentLang].toastOfflineTitle,
+                translations[currentLang].toastOfflineMsg,
+                'warning'
+            );
+        });
+
+        // ==========================================
+        // 8. CUSTOM TOAST NOTIFICATIONS / نظام التنبيهات والتحذيرات
+        // ==========================================
+        let toastTimeout;
+        function showToast(title, message, type = 'success') {
+            // Clear previous timeout if any / إلغاء التوقيت السابق إن وجد لتفادي التداخل
+            clearTimeout(toastTimeout);
+
+            // Set background and icon depending on alert type
+            // تحديد لون الأيقونة وتفاصيل التنبيه بناءً على نوع الحالة
+            if (type === 'success') {
+                toastIconWrapper.className = "p-1.5 rounded-lg bg-emerald-500 text-white shadow-md shadow-emerald-500/20";
+                toastIconWrapper.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                `;
+            } else if (type === 'error') {
+                toastIconWrapper.className = "p-1.5 rounded-lg bg-rose-500 text-white shadow-md shadow-rose-500/20";
+                toastIconWrapper.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                `;
+            } else { // Warning / Offline state / حالة التحذير أو انقطاع الاتصال
+                toastIconWrapper.className = "p-1.5 rounded-lg bg-amber-500 text-white shadow-md shadow-amber-500/20";
+                toastIconWrapper.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                `;
+            }
+
+            toastTitle.textContent = title;
+            toastMessage.textContent = message;
+
+            // Show Toast / إظهار نافذة التنبيه
+            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            // Hide Toast after 4 seconds / إخفاء النافذة تلقائياً بعد مرور 4 ثوانٍ
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+            }, 4000);
+        }
+
+        // ==========================================
+        // 9. EDUCATIONAL MODAL CONTROL / إدارة نافذة محاكاة الكود للتعلم
+        // ==========================================
+        let pendingRedirectionRole = null;
+
+        function openModal(role) {
+            pendingRedirectionRole = role;
+            codeModal.classList.remove('hidden');
+            // Trigger browser reflow for transitions / تفعيل انتقال الحركات بنعومة
+            void codeModal.offsetWidth;
+            codeModal.classList.remove('opacity-0');
+            modalContent.classList.remove('scale-95');
+            modalContent.classList.add('scale-100');
+        }
+
+        function closeModal() {
+            codeModal.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            
+            setTimeout(() => {
+                codeModal.classList.add('hidden');
+                // Redirect user to the role-based simulated dashboard
+                // تحويل المستخدم إلى لوحة التحكم الافتراضية المناسبة لدوره بعد إغلاق النافذة
+                if (pendingRedirectionRole) {
+                    showToast(
+                        translations[currentLang].toastSuccessTitle,
+                        translations[currentLang].toastSuccessMsg + translations[currentLang][`role${pendingRedirectionRole}`],
+                        'success'
+                    );
+                    
+                    setTimeout(() => {
+                        // In a real application, you would change location / في التطبيق الفعلي، يتم تحويل المستخدم للصفحة التالية
+                        alert(`Redirecting to Simulated Dashboard / تحويل افتراضي إلى: /${pendingRedirectionRole.toLowerCase()}/dashboard.html`);
+                        resetSubmitButton();
+                    }, 1500);
+                }
+            }, 300);
+        }
+
+        closeModalBtn.addEventListener('click', closeModal);
+        modalProceedBtn.addEventListener('click', closeModal);
+        codeModal.addEventListener('click', (e) => {
+            if (e.target === codeModal) closeModal();
+        });
+
+        // ==========================================
+        // 10. FORM SUBMISSION & AUTH MOCKUP / التحقق من صحة النموذج والمحاكاة لـ Supabase
+        // ==========================================
+        function resetSubmitButton() {
+            submitBtn.disabled = false;
+            submitText.classList.remove('hidden');
+            submitSpinner.classList.add('hidden');
+        }
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // Clear errors / إعادة تعيين الأخطاء الحالية
+            emailError.classList.add('hidden');
+            passwordError.classList.add('hidden');
+            emailInput.classList.remove('border-rose-500', 'focus:border-rose-500', 'focus:ring-rose-500/10');
+            passwordInput.classList.remove('border-rose-500', 'focus:border-rose-500', 'focus:ring-rose-500/10');
+
+            let isValid = true;
+
+            // Simple validation / التحقق الأساسي من الحقول
+            const emailValue = emailInput.value.trim();
+            const passwordValue = passwordInput.value;
+
+            // Check email expression / التحقق من نمط البريد الإلكتروني
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(emailValue)) {
+                emailError.textContent = translations[currentLang].errInvalidEmail;
+                emailError.classList.remove('hidden');
+                emailInput.classList.add('border-rose-500', 'focus:border-rose-500', 'focus:ring-rose-500/10');
+                isValid = false;
+            }
+
+            // Check password length / التحقق من طول كلمة المرور
+            if (passwordValue.length < 6) {
+                passwordError.textContent = translations[currentLang].errShortPassword;
+                passwordError.classList.remove('hidden');
+                passwordInput.classList.add('border-rose-500', 'focus:border-rose-500', 'focus:ring-rose-500/10');
+                isValid = false;
+            }
+
+            if (!isValid) return;
+
+            // Verify network connection / التحقق من توفر اتصال الإنترنت
+            if (!navigator.onLine) {
+                showToast(
+                    translations[currentLang].toastOfflineTitle,
+                    translations[currentLang].toastOfflineMsg,
+                    'error'
+                );
                 return;
             }
 
-            // استعلام رتبة المستخدم من جدول user_roles
-            const { data: userRole } = await supabase
-                .from('user_roles')
-                .select('role')
-                .eq('user_id', data.user.id)
-                .single();
+            // Set loading state / تفعيل حالة الانتظار وجاري التحميل
+            submitBtn.disabled = true;
+            submitText.classList.add('hidden');
+            submitSpinner.classList.remove('hidden');
 
-            // منطق التوجيه الذكي (Routing)
-            const role = userRole?.role;
-            if (role === 'super_admin') window.location.href = "./admin-ads.html";
-            else if (role === 'admin_assistant') window.location.href = "./admin-subscriptions.html";
-            else if (role === 'ads_agent') window.location.href = "./ads.html";
-            else if (role === 'doctor' || role === 'secretary') window.location.href = "./dashboard.html";
-            else alert("ليس لديك رتبة محددة، تواصل مع الإدارة.");
+            if (supabaseClient) {
+                // Actual Supabase Authentication / اتصال مباشر بـ Supabase
+                supabaseClient.auth.signInWithPassword({
+                    email: emailValue,
+                    password: passwordValue
+                }).then(({ data, error }) => {
+                    if (error) {
+                        showToast(translations[currentLang].toastErrorTitle, error.message, 'error');
+                        resetSubmitButton();
+                    } else {
+                        // Retrieve role from user metadata / جلب الدور من البيانات الوصفية للمستخدم
+                        const determinedRole = data.user.user_metadata.role || "Doctor";
+                        showToast(
+                            translations[currentLang].toastSuccessTitle,
+                            translations[currentLang].toastSuccessMsg + translations[currentLang][`role${determinedRole}`],
+                            'success'
+                        );
+                        setTimeout(() => {
+                            window.location.href = `/${determinedRole.toLowerCase()}/dashboard.html`;
+                        }, 1500);
+                    }
+                }).catch(err => {
+                    showToast(translations[currentLang].toastErrorTitle, err.message, 'error');
+                    resetSubmitButton();
+                });
+            } else {
+                // Demo Mode / وضع المحاكاة التجريبي
+                showToast("Demo Mode / الوضع التجريبي", 
+                    currentLang === 'ar' ? "أدخل مفتاح Supabase Anon Key في الكود لتفعيل الاتصال الحقيقي." : "Insert your Supabase Anon Key in the script to enable live connection.", 
+                    'warning'
+                );
+                
+                // Simulate Supabase API authentication request / محاكاة طلب المصادقة لـ Supabase
+                setTimeout(() => {
+                    let determinedRole = "Doctor";
+                    if (emailValue.includes('admin')) {
+                        determinedRole = "Admin";
+                    } else if (emailValue.includes('reception')) {
+                        determinedRole = "Receptionist";
+                    }
+
+                    console.log(`[Supabase Auth Simulation] Authenticating ${emailValue}...`);
+                    console.log(`[Supabase Auth Simulation] Successful. Role: ${determinedRole}`);
+
+                    openModal(determinedRole);
+                }, 1800);
+            }
         });
     </script>
 </body>
